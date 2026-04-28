@@ -1,0 +1,1 @@
+Handles Data classes such as Vehicle, Customer, etc.

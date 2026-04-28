@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox prefHeight="600.0" prefWidth="950.0" spacing="20.0" style="-fx-background-color: #1a2540;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.vis.controller.InsuranceListController">
+    <padding>
+        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+    </padding>
+    <children>
+        <HBox alignment="CENTER_LEFT" spacing="15.0">
+            <children>
+                <Label text="Insurance Policies" textFill="WHITE">
+                    <font><Font name="System Bold" size="24.0"/></font>
+                </Label>
+                <HBox HBox.hgrow="ALWAYS"/>
+                <HBox alignment="CENTER_LEFT" spacing="10"
+                      style="-fx-background-color: #12192b; -fx-background-radius: 6;
+                             -fx-border-color: #2a3a5a; -fx-border-radius: 6;
+                             -fx-border-width: 1; -fx-padding: 0 12 0 12;">
+                    <FontIcon iconLiteral="fas-search" iconSize="12" iconColor="#5a6a8a"/>
+                    <TextField fx:id="searchField" prefWidth="300.0"
+                               promptText="Search policies..."
+                               style="-fx-background-color: transparent; -fx-text-fill: white;
+                                      -fx-prompt-text-fill: #5a6a8a; -fx-padding: 8 0 8 4;"/>
+                </HBox>
+                <Button mnemonicParsing="false" onAction="#handleRefresh" prefHeight="35.0"
+                        style="-fx-background-color: #34495e; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 6;"
+                        text="Refresh">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-sync-alt" iconColor="WHITE"/>
+                    </graphic>
+                </Button>
+            </children>
+        </HBox>
+
+        <HBox spacing="20">
+            <VBox spacing="5" HBox.hgrow="ALWAYS" style="-fx-background-color: #12192b; -fx-background-radius: 8; -fx-padding: 12 16; -fx-border-color: #2a3a5a; -fx-border-radius: 8;">
+                <Label text="Total Policies" style="-fx-text-fill: #5a6a8a; -fx-font-size: 12; -fx-font-weight: bold;"/>
+                <Label fx:id="lblTotalPolicies" text="0" style="-fx-text-fill: white; -fx-font-size: 20; -fx-font-weight: bold;"/>
+            </VBox>
+            <VBox spacing="5" HBox.hgrow="ALWAYS" style="-fx-background-color: #12192b; -fx-background-radius: 8; -fx-padding: 12 16; -fx-border-color: #2a3a5a; -fx-border-radius: 8;">
+                <Label text="Active Policies" style="-fx-text-fill: #5a6a8a; -fx-font-size: 12; -fx-font-weight: bold;"/>
+                <Label fx:id="lblActivePolicies" text="0" style="-fx-text-fill: #27ae60; -fx-font-size: 20; -fx-font-weight: bold;"/>
+            </VBox>
+            <VBox spacing="5" HBox.hgrow="ALWAYS" style="-fx-background-color: #12192b; -fx-background-radius: 8; -fx-padding: 12 16; -fx-border-color: #2a3a5a; -fx-border-radius: 8;">
+                <Label text="Expired Policies" style="-fx-text-fill: #5a6a8a; -fx-font-size: 12; -fx-font-weight: bold;"/>
+                <Label fx:id="lblExpiredPolicies" text="0" style="-fx-text-fill: #e74c3c; -fx-font-size: 20; -fx-font-weight: bold;"/>
+            </VBox>
+        </HBox>
+
+        <TableView fx:id="insuranceTable" style="-fx-background-color: #12192b; -fx-control-inner-background: #12192b; -fx-selection-bar: #34495e;" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colPolicyID" prefWidth="80.0" text="Policy ID" />
+                <TableColumn fx:id="colVehicleID" prefWidth="100.0" text="Vehicle ID" />
+                <TableColumn fx:id="colProvider" prefWidth="150.0" text="Provider" />
+                <TableColumn fx:id="colPolicyNumber" prefWidth="150.0" text="Policy Number" />
+                <TableColumn fx:id="colStartDate" prefWidth="120.0" text="Start Date" />
+                <TableColumn fx:id="colEndDate" prefWidth="120.0" text="End Date" />
+                <TableColumn fx:id="colStatus" prefWidth="100.0" text="Status" />
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
+            <placeholder>
+                <VBox alignment="CENTER" spacing="10">
+                    <FontIcon iconLiteral="fas-file-contract" iconSize="36" iconColor="#2a3a5a"/>
+                    <Label text="No insurance policies found" textFill="#5a6a8a" style="-fx-font-size: 13;"/>
+                </VBox>
+            </placeholder>
+        </TableView>
+    </children>
+</VBox>

@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+            style="-fx-background: #1a2540; -fx-background-color: #1a2540;"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.vis.controller.DashboardStatsController">
+
+    <content>
+        <VBox spacing="24.0" style="-fx-background-color: #1a2540;">
+            <padding>
+                <Insets bottom="30.0" left="30.0" right="30.0" top="30.0"/>
+            </padding>
+
+            <!-- PAGE TITLE -->
+            <VBox spacing="4">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <FontIcon iconLiteral="fas-tachometer-alt" iconSize="24" iconColor="#3498db"/>
+                    <Label text="System Overview" textFill="WHITE">
+                        <font><Font name="System Bold" size="26.0"/></font>
+                    </Label>
+                </HBox>
+                <Label fx:id="lblLastUpdated" text="Loading data..."
+                       textFill="#5a6a8a" style="-fx-font-size: 12;"/>
+            </VBox>
+
+            <!-- STAT CARDS ROW 1 -->
+            <GridPane hgap="16" vgap="16">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="110"/>
+                </rowConstraints>
+
+                <!-- VEHICLES -->
+                <VBox spacing="6" style="-fx-background-color: #12192b; -fx-background-radius: 10;
+                                         -fx-padding: 18; -fx-border-color: #2a3a5a;
+                                         -fx-border-radius: 10; -fx-border-width: 1;"
+                      GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <VBox alignment="CENTER" prefWidth="36" prefHeight="36"
+                              style="-fx-background-color: #1a3a5a; -fx-background-radius: 8;">
+                            <FontIcon iconLiteral="fas-car" iconSize="16" iconColor="#3498db"/>
+                        </VBox>
+                        <Label text="Total Vehicles" textFill="#8a9ab5" style="-fx-font-size: 13;"/>
+                    </HBox>
+                    <Label fx:id="statVehicles" text="—" textFill="WHITE"
+                           style="-fx-font-size: 32; -fx-font-weight: bold;"/>
+                    <HBox alignment="CENTER_LEFT" spacing="4">
+                        <FontIcon fx:id="iconVehiclesTrend" iconLiteral="fas-arrow-up"
+                                  iconSize="11" iconColor="#27ae60"/>
+                        <Label fx:id="lblVehiclesTrend" text="Registered in system"
+                               textFill="#5a6a8a" style="-fx-font-size: 11;"/>
+                    </HBox>
+                </VBox>
+
+                <!-- CUSTOMERS -->
+                <VBox spacing="6" style="-fx-background-color: #12192b; -fx-background-radius: 10;
+                                         -fx-padding: 18; -fx-border-color: #2a3a5a;
+                                         -fx-border-radius: 10; -fx-border-width: 1;"
+                      GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <VBox alignment="CENTER" prefWidth="36" prefHeight="36"
+                              style="-fx-background-color: #1a4a2a; -fx-background-radius: 8;">
+                            <FontIcon iconLiteral="fas-users" iconSize="16" iconColor="#27ae60"/>
+                        </VBox>
+                        <Label text="Customers" textFill="#8a9ab5" style="-fx-font-size: 13;"/>
+                    </HBox>
+                    <Label fx:id="statCustomers" text="—" textFill="WHITE"
+                           style="-fx-font-size: 32; -fx-font-weight: bold;"/>
+                    <HBox alignment="CENTER_LEFT" spacing="4">
+                        <FontIcon iconLiteral="fas-user-check" iconSize="11" iconColor="#27ae60"/>
+                        <Label fx:id="lblCustomersSub" text="Registered owners"
+                               textFill="#5a6a8a" style="-fx-font-size: 11;"/>
+                    </HBox>
+                </VBox>
+
+                <!-- VIOLATIONS -->
+                <VBox spacing="6" style="-fx-background-color: #12192b; -fx-background-radius: 10;
+                                         -fx-padding: 18; -fx-border-color: #2a3a5a;
+                                         -fx-border-radius: 10; -fx-border-width: 1;"
+                      GridPane.columnIndex="2" GridPane.rowIndex="0">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <VBox alignment="CENTER" prefWidth="36" prefHeight="36"
+                              style="-fx-background-color: #4a1a1a; -fx-background-radius: 8;">
+                            <FontIcon iconLiteral="fas-exclamation-circle" iconSize="16" iconColor="#e74c3c"/>
+                        </VBox>
+                        <Label text="Violations" textFill="#8a9ab5" style="-fx-font-size: 13;"/>
+                    </HBox>
+                    <Label fx:id="statViolations" text="—" textFill="WHITE"
+                           style="-fx-font-size: 32; -fx-font-weight: bold;"/>
+                    <HBox alignment="CENTER_LEFT" spacing="4">
+                        <FontIcon fx:id="iconViolationsPending" iconLiteral="fas-clock"
+                                  iconSize="11" iconColor="#f39c12"/>
+                        <Label fx:id="lblViolationsPending" text="Pending fines"
+                               textFill="#5a6a8a" style="-fx-font-size: 11;"/>
+                    </HBox>
+                </VBox>
+
+                <!-- POLICE REPORTS -->
+                <VBox spacing="6" style="-fx-background-color: #12192b; -fx-background-radius: 10;
+                                         -fx-padding: 18; -fx-border-color: #2a3a5a;
+                                         -fx-border-radius: 10; -fx-border-width: 1;"
+                      GridPane.columnIndex="3" GridPane.rowIndex="0">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <VBox alignment="CENTER" prefWidth="36" prefHeight="36"
+                              style="-fx-background-color: #3a2a0a; -fx-background-radius: 8;">
+                            <FontIcon iconLiteral="fas-file-alt" iconSize="16" iconColor="#f39c12"/>
+                        </VBox>
+                        <Label text="Police Reports" textFill="#8a9ab5" style="-fx-font-size: 13;"/>
+                    </HBox>
+                    <Label fx:id="statReports" text="—" textFill="WHITE"
+                           style="-fx-font-size: 32; -fx-font-weight: bold;"/>
+                    <HBox alignment="CENTER_LEFT" spacing="4">
+                        <FontIcon iconLiteral="fas-shield-alt" iconSize="11" iconColor="#f39c12"/>
+                        <Label fx:id="lblReportsSub" text="Total filed reports"
+                               textFill="#5a6a8a" style="-fx-font-size: 11;"/>
+                    </HBox>
+                </VBox>
+            </GridPane>
+
+            <!-- ROW 2: SERVICE + FINES SUMMARY -->
+            <GridPane hgap="16" vgap="16">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50"/>
+                    <ColumnConstraints percentWidth="50"/>
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="90"/>
+                </rowConstraints>
+
+                <VBox spacing="6" style="-fx-background-color: #12192b; -fx-background-radius: 10;
+                                         -fx-padding: 18; -fx-border-color: #2a3a5a;
+                                         -fx-border-radius: 10; -fx-border-width: 1;"
+                      GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <VBox alignment="CENTER" prefWidth="36" prefHeight="36"
+                              style="-fx-background-color: #1a2a4a; -fx-background-radius: 8;">
+                            <FontIcon iconLiteral="fas-tools" iconSize="16" iconColor="#9b59b6"/>
+                        </VBox>
+                        <Label text="Service Records" textFill="#8a9ab5" style="-fx-font-size: 13;"/>
+                        <HBox HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="statServices" text="—" textFill="WHITE"
+                               style="-fx-font-size: 28; -fx-font-weight: bold;"/>
+                    </HBox>
+                    <Separator style="-fx-background-color: #2a3a5a;"/>
+                    <HBox alignment="CENTER_LEFT" spacing="20">
+                        <HBox spacing="6" alignment="CENTER_LEFT">
+                            <FontIcon iconLiteral="fas-calendar-check" iconSize="12" iconColor="#9b59b6"/>
+                            <Label text="Total service jobs logged" textFill="#5a6a8a"
+                                   style="-fx-font-size: 12;"/>
+                        </HBox>
+                        <HBox spacing="6" alignment="CENTER_LEFT">
+                            <FontIcon iconLiteral="fas-money-bill-wave" iconSize="12" iconColor="#27ae60"/>
+                            <Label fx:id="lblTotalServiceCost" text="Revenue: —"
+                                   textFill="#5a6a8a" style="-fx-font-size: 12;"/>
+                        </HBox>
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="6" style="-fx-background-color: #12192b; -fx-background-radius: 10;
+                                         -fx-padding: 18; -fx-border-color: #2a3a5a;
+                                         -fx-border-radius: 10; -fx-border-width: 1;"
+                      GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <VBox alignment="CENTER" prefWidth="36" prefHeight="36"
+                              style="-fx-background-color: #4a2a10; -fx-background-radius: 8;">
+                            <FontIcon iconLiteral="fas-gavel" iconSize="16" iconColor="#e67e22"/>
+                        </VBox>
+                        <Label text="Outstanding Fines" textFill="#8a9ab5" style="-fx-font-size: 13;"/>
+                        <HBox HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="statFines" text="M —" textFill="#e74c3c"
+                               style="-fx-font-size: 28; -fx-font-weight: bold;"/>
+                    </HBox>
+                    <Separator style="-fx-background-color: #2a3a5a;"/>
+                    <HBox alignment="CENTER_LEFT" spacing="20">
+                        <HBox spacing="6" alignment="CENTER_LEFT">
+                            <FontIcon iconLiteral="fas-exclamation-triangle" iconSize="12" iconColor="#e74c3c"/>
+                            <Label fx:id="lblUnpaidViolations" text="Unpaid violations: —"
+                                   textFill="#5a6a8a" style="-fx-font-size: 12;"/>
+                        </HBox>
+                        <HBox spacing="6" alignment="CENTER_LEFT">
+                            <FontIcon iconLiteral="fas-check-square" iconSize="12" iconColor="#27ae60"/>
+                            <Label fx:id="lblPaidViolations" text="Paid: —"
+                                   textFill="#5a6a8a" style="-fx-font-size: 12;"/>
+                        </HBox>
+                    </HBox>
+                </VBox>
+            </GridPane>
+
+            <!-- RECENT ACTIVITY SECTION -->
+            <VBox spacing="0" style="-fx-background-color: #12192b; -fx-background-radius: 10;
+                                      -fx-border-color: #2a3a5a; -fx-border-radius: 10;
+                                      -fx-border-width: 1;">
+                <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 18 18 14 18;">
+                    <FontIcon iconLiteral="fas-history" iconSize="16" iconColor="#3498db"/>
+                    <Label text="Recent Activity" textFill="WHITE"
+                           style="-fx-font-size: 15; -fx-font-weight: bold;"/>
+                    <HBox HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="lblActivityCount" text="" textFill="#5a6a8a"
+                           style="-fx-font-size: 12;"/>
+                </HBox>
+                <Separator style="-fx-background-color: #2a3a5a;"/>
+
+                <!-- Activity items loaded dynamically via fx:id -->
+                <VBox fx:id="activityList" spacing="0">
+                    <!-- Populated by DashboardStatsController -->
+                    <HBox alignment="CENTER" style="-fx-padding: 24;">
+                        <FontIcon iconLiteral="fas-spinner" iconSize="20" iconColor="#2a3a5a"/>
+                        <Label text="  Loading recent activity..." textFill="#2a3a5a"
+                               style="-fx-font-size: 13;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <!-- QUICK ACTIONS -->
+            <VBox spacing="12" style="-fx-background-color: #12192b; -fx-background-radius: 10;
+                                       -fx-padding: 18; -fx-border-color: #2a3a5a;
+                                       -fx-border-radius: 10; -fx-border-width: 1;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <FontIcon iconLiteral="fas-bolt" iconSize="16" iconColor="#f39c12"/>
+                    <Label text="Quick Actions" textFill="WHITE"
+                           style="-fx-font-size: 15; -fx-font-weight: bold;"/>
+                </HBox>
+                <Separator style="-fx-background-color: #2a3a5a;"/>
+                <HBox spacing="12">
+                    <VBox alignment="CENTER" spacing="8" prefWidth="120" prefHeight="80"
+                          onMouseClicked="#quickAddVehicle"
+                          style="-fx-background-color: #1a2540; -fx-background-radius: 8;
+                                 -fx-cursor: hand; -fx-border-color: #2a3a5a;
+                                 -fx-border-radius: 8; -fx-border-width: 1;">
+                        <FontIcon iconLiteral="fas-car-side" iconSize="22" iconColor="#3498db"/>
+                        <Label text="Add Vehicle" textFill="#bdc3c7" style="-fx-font-size: 12;"/>
+                    </VBox>
+                    <VBox alignment="CENTER" spacing="8" prefWidth="120" prefHeight="80"
+                          onMouseClicked="#quickAddCustomer"
+                          style="-fx-background-color: #1a2540; -fx-background-radius: 8;
+                                 -fx-cursor: hand; -fx-border-color: #2a3a5a;
+                                 -fx-border-radius: 8; -fx-border-width: 1;">
+                        <FontIcon iconLiteral="fas-user-plus" iconSize="22" iconColor="#27ae60"/>
+                        <Label text="New Customer" textFill="#bdc3c7" style="-fx-font-size: 12;"/>
+                    </VBox>
+                    <VBox alignment="CENTER" spacing="8" prefWidth="120" prefHeight="80"
+                          onMouseClicked="#quickIssueViolation"
+                          style="-fx-background-color: #1a2540; -fx-background-radius: 8;
+                                 -fx-cursor: hand; -fx-border-color: #2a3a5a;
+                                 -fx-border-radius: 8; -fx-border-width: 1;">
+                        <FontIcon iconLiteral="fas-gavel" iconSize="22" iconColor="#e74c3c"/>
+                        <Label text="Issue Violation" textFill="#bdc3c7" style="-fx-font-size: 12;"/>
+                    </VBox>
+                    <VBox alignment="CENTER" spacing="8" prefWidth="120" prefHeight="80"
+                          onMouseClicked="#quickLogService"
+                          style="-fx-background-color: #1a2540; -fx-background-radius: 8;
+                                 -fx-cursor: hand; -fx-border-color: #2a3a5a;
+                                 -fx-border-radius: 8; -fx-border-width: 1;">
+                        <FontIcon iconLiteral="fas-tools" iconSize="22" iconColor="#9b59b6"/>
+                        <Label text="Log Service" textFill="#bdc3c7" style="-fx-font-size: 12;"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </VBox>
+    </content>
+</ScrollPane>

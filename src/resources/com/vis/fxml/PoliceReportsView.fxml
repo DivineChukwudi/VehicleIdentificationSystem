@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox prefHeight="600.0" prefWidth="950.0" spacing="20.0"
+      style="-fx-background-color: #1a2540;"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.vis.controller.PoliceReportsController">
+    <padding>
+        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0"/>
+    </padding>
+    <children>
+
+        <!-- HEADER ROW -->
+        <HBox alignment="CENTER_LEFT" spacing="12.0">
+            <children>
+                <FontIcon iconLiteral="fas-file-alt" iconSize="22" iconColor="WHITE"/>
+                <Label text="Police Reports" textFill="WHITE">
+                    <font><Font name="System Bold" size="24.0"/></font>
+                </Label>
+                <HBox HBox.hgrow="ALWAYS"/>
+                <HBox alignment="CENTER_LEFT" spacing="0"
+                      style="-fx-background-color: #12192b; -fx-background-radius: 6; -fx-border-color: #2a3a5a; -fx-border-radius: 6; -fx-border-width: 1;">
+                    <FontIcon iconLiteral="fas-search" iconSize="14" iconColor="#bdc3c7"
+                              style="-fx-padding: 0 0 0 10;"/>
+                    <TextField fx:id="searchField" prefWidth="300.0"
+                               promptText="Search by Vehicle or Officer..."
+                               style="-fx-background-color: transparent; -fx-text-fill: white;
+                                      -fx-prompt-text-fill: #bdc3c7; -fx-padding: 8 10 8 8;"/>
+                </HBox>
+                <Button mnemonicParsing="false" onAction="#handleAddReport" prefHeight="36.0"
+                        style="-fx-background-color: #e74c3c; -fx-text-fill: white;
+                               -fx-font-weight: bold; -fx-cursor: hand; -fx-background-radius: 6;">
+                    <graphic>
+                        <HBox alignment="CENTER" spacing="6">
+                            <FontIcon iconLiteral="fas-plus" iconSize="12" iconColor="WHITE"/>
+                            <Label text="File Report" textFill="WHITE" style="-fx-font-weight: bold;"/>
+                        </HBox>
+                    </graphic>
+                </Button>
+                <Button mnemonicParsing="false" onAction="#handleRefresh" prefHeight="36.0"
+                        style="-fx-background-color: #34495e; -fx-text-fill: white;
+                               -fx-cursor: hand; -fx-background-radius: 6;">
+                    <graphic>
+                        <FontIcon iconLiteral="fas-sync-alt" iconSize="14" iconColor="WHITE"/>
+                    </graphic>
+                </Button>
+            </children>
+        </HBox>
+
+        <!-- STATS BAR -->
+        <HBox spacing="15.0">
+            <children>
+                <VBox alignment="CENTER_LEFT" spacing="3" prefWidth="160"
+                      style="-fx-background-color: #12192b; -fx-background-radius: 8; -fx-padding: 12 16;">
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <FontIcon iconLiteral="fas-file-contract" iconSize="14" iconColor="#3498db"/>
+                        <Label text="Total Reports" textFill="#bdc3c7" style="-fx-font-size: 12;"/>
+                    </HBox>
+                    <Label fx:id="lblTotalReports" text="—" textFill="WHITE"
+                           style="-fx-font-size: 22; -fx-font-weight: bold;"/>
+                </VBox>
+                <VBox alignment="CENTER_LEFT" spacing="3" prefWidth="160"
+                      style="-fx-background-color: #12192b; -fx-background-radius: 8; -fx-padding: 12 16;">
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <FontIcon iconLiteral="fas-user-shield" iconSize="14" iconColor="#27ae60"/>
+                        <Label text="Active Officers" textFill="#bdc3c7" style="-fx-font-size: 12;"/>
+                    </HBox>
+                    <Label fx:id="lblActiveOfficers" text="—" textFill="WHITE"
+                           style="-fx-font-size: 22; -fx-font-weight: bold;"/>
+                </VBox>
+            </children>
+        </HBox>
+
+        <!-- TABLE -->
+        <TableView fx:id="policeTable"
+                   stylesheets="@../styles/table-style.css"
+                   style="-fx-background-color: #12192b; -fx-control-inner-background: #12192b;
+                          -fx-selection-bar: #2a3a5a; -fx-selection-bar-non-focused: #2a3a5a;"
+                   VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colReportID"   prefWidth="80.0"  text="ID"/>
+                <TableColumn fx:id="colVehicleID"  prefWidth="100.0" text="Vehicle ID"/>
+                <TableColumn fx:id="colReportDate" prefWidth="130.0" text="Date"/>
+                <TableColumn fx:id="colReportType" prefWidth="140.0" text="Type"/>
+                <TableColumn fx:id="colDescription" prefWidth="300.0" text="Description"/>
+                <TableColumn fx:id="colOfficerName" prefWidth="150.0" text="Officer"/>
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+            <placeholder>
+                <VBox alignment="CENTER" spacing="10">
+                    <FontIcon iconLiteral="fas-clipboard-list" iconSize="40" iconColor="#2a3a5a"/>
+                    <Label text="No police reports found" textFill="#5a6a8a" style="-fx-font-size: 14;"/>
+                </VBox>
+            </placeholder>
+        </TableView>
+    </children>
+</VBox>

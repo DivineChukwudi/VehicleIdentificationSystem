@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<BorderPane prefHeight="700.0" prefWidth="1100.0"
+            style="-fx-background-color: #1a2540;"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.vis.controller.PolicePortalController">
+
+    <top>
+        <VBox>
+            <MenuBar style="-fx-background-color: #0d1321;">
+                <Menu text="File">
+                    <MenuItem text="Logout" onAction="#handleLogout"/>
+                </Menu>
+                <Menu text="View">
+                    <MenuItem text="File Report" onAction="#handleFileReport"/>
+                    <MenuItem text="Issue Violation" onAction="#handleIssueViolation"/>
+                    <MenuItem text="Search Vehicle" onAction="#handleSearchVehicle"/>
+                </Menu>
+                <Menu text="Help">
+                    <MenuItem text="About" onAction="#handleLogout"/>
+                </Menu>
+            </MenuBar>
+            <HBox alignment="CENTER_LEFT" prefHeight="60.0" spacing="14"
+                  style="-fx-background-color: #12192b; -fx-border-color: #2a3a5a; -fx-border-width: 0 0 1 0; -fx-padding: 0 24 0 24;">
+            <FontIcon iconLiteral="fas-shield-alt" iconSize="28" iconColor="#3498db"/>
+            <VBox spacing="2">
+                <Label fx:id="lblOfficerName" text="Officer" textFill="WHITE"
+                       style="-fx-font-weight: bold; -fx-font-size: 15;"/>
+                <Label text="Police Officer Portal" textFill="#5a6a8a" style="-fx-font-size: 12;"/>
+            </VBox>
+            <HBox HBox.hgrow="ALWAYS"/>
+            <Label style="-fx-background-color: #3a1a1a; -fx-padding: 4 12; -fx-background-radius: 20; -fx-text-fill: #e74c3c; -fx-font-size: 11; -fx-font-weight: bold;"
+                   text="POLICE OFFICER"/>
+            <Button onAction="#handleLogout" prefHeight="34"
+                    style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 6; -fx-font-weight: bold;">
+                <graphic>
+                    <HBox alignment="CENTER" spacing="6">
+                        <FontIcon iconLiteral="fas-sign-out-alt" iconSize="13" iconColor="WHITE"/>
+                        <Label text="Logout" textFill="WHITE" style="-fx-font-size: 12; -fx-font-weight: bold;"/>
+                    </HBox>
+                </graphic>
+            </Button>
+        </HBox>
+    </VBox>
+    </top>
+
+    <left>
+        <VBox prefWidth="210.0" spacing="4"
+              style="-fx-background-color: #12192b; -fx-border-color: #2a3a5a; -fx-border-width: 0 1 0 0; -fx-padding: 16 8;">
+
+            <Label text="OPERATIONS" textFill="#5a6a8a"
+                   style="-fx-font-size: 10; -fx-font-weight: bold; -fx-padding: 8 10 4 10;"/>
+
+            <Button fx:id="navFileReport" maxWidth="1.7976931348623157E308" onAction="#handleFileReport"
+                    style="-fx-background-color: #3a1a1a; -fx-text-fill: #e74c3c; -fx-alignment: CENTER_LEFT; -fx-background-radius: 6; -fx-cursor: hand;">
+                <graphic>
+                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 8 10;">
+                        <FontIcon iconLiteral="fas-file-alt" iconSize="15" iconColor="#e74c3c"/>
+                        <Label text="File Report" textFill="#e74c3c" style="-fx-font-weight: bold;"/>
+                    </HBox>
+                </graphic>
+            </Button>
+
+            <Button fx:id="navIssueViolation" maxWidth="1.7976931348623157E308" onAction="#handleIssueViolation"
+                    style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-alignment: CENTER_LEFT; -fx-background-radius: 6; -fx-cursor: hand;">
+                <graphic>
+                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 8 10;">
+                        <FontIcon iconLiteral="fas-gavel" iconSize="15" iconColor="#bdc3c7"/>
+                        <Label text="Issue Violation" textFill="#bdc3c7"/>
+                    </HBox>
+                </graphic>
+            </Button>
+
+            <Button fx:id="navSearchVehicle" maxWidth="1.7976931348623157E308" onAction="#handleSearchVehicle"
+                    style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-alignment: CENTER_LEFT; -fx-background-radius: 6; -fx-cursor: hand;">
+                <graphic>
+                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 8 10;">
+                        <FontIcon iconLiteral="fas-search" iconSize="15" iconColor="#bdc3c7"/>
+                        <Label text="Search Vehicle" textFill="#bdc3c7"/>
+                    </HBox>
+                </graphic>
+            </Button>
+
+            <Label text="RECORDS" textFill="#5a6a8a"
+                   style="-fx-font-size: 10; -fx-font-weight: bold; -fx-padding: 16 10 4 10;"/>
+
+            <Button fx:id="navAllReports" maxWidth="1.7976931348623157E308" onAction="#handleAllReports"
+                    style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-alignment: CENTER_LEFT; -fx-background-radius: 6; -fx-cursor: hand;">
+                <graphic>
+                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 8 10;">
+                        <FontIcon iconLiteral="fas-list-alt" iconSize="15" iconColor="#bdc3c7"/>
+                        <Label text="All Reports" textFill="#bdc3c7"/>
+                    </HBox>
+                </graphic>
+            </Button>
+
+            <Button fx:id="navAllViolations" maxWidth="1.7976931348623157E308" onAction="#handleAllViolations"
+                    style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-alignment: CENTER_LEFT; -fx-background-radius: 6; -fx-cursor: hand;">
+                <graphic>
+                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 8 10;">
+                        <FontIcon iconLiteral="fas-exclamation-triangle" iconSize="15" iconColor="#bdc3c7"/>
+                        <Label text="All Violations" textFill="#bdc3c7"/>
+                    </HBox>
+                </graphic>
+            </Button>
+
+            <VBox VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </left>
+
+    <center>
+        <StackPane fx:id="contentArea" style="-fx-background-color: #1a2540;" BorderPane.alignment="CENTER">
+            <VBox alignment="CENTER" spacing="12">
+                <FontIcon iconLiteral="fas-shield-alt" iconSize="52" iconColor="#2a3a5a"/>
+                <Label text="Select an operation from the menu" textFill="#5a6a8a" style="-fx-font-size: 14;"/>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>
