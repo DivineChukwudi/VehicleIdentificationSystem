@@ -113,26 +113,22 @@ public class UIUtils {
         pane.getButtonTypes().forEach(buttonType -> {
             Button btn = (Button) pane.lookupButton(buttonType);
             if (btn != null) {
+                String baseStyle;
+                String hoverStyle;
                 if (buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE || 
                     buttonType.getButtonData() == ButtonBar.ButtonData.YES) {
-                    btn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 14 35; -fx-background-radius: 8; -fx-font-size: 14;");
+                    baseStyle = "-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 14 35; -fx-background-radius: 8; -fx-font-size: 14;";
+                    hoverStyle = "-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 14 35; -fx-background-radius: 8; -fx-font-size: 14;";
                 } else {
-                    btn.setStyle("-fx-background-color: #34495e; -fx-text-fill: white; -fx-cursor: hand; -fx-padding: 14 35; -fx-background-radius: 8; -fx-font-size: 14;");
+                    baseStyle = "-fx-background-color: #34495e; -fx-text-fill: white; -fx-cursor: hand; -fx-padding: 14 35; -fx-background-radius: 8; -fx-font-size: 14;";
+                    hoverStyle = "-fx-background-color: #2c3e50; -fx-text-fill: white; -fx-cursor: hand; -fx-padding: 14 35; -fx-background-radius: 8; -fx-font-size: 14;";
                 }
                 
+                btn.setStyle(baseStyle);
+                
                 // Add hover effect
-                btn.setOnMouseEntered(e -> {
-                    if (buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE || buttonType.getButtonData() == ButtonBar.ButtonData.YES)
-                        btn.setStyle(btn.getStyle() + "-fx-background-color: #2980b9;");
-                    else
-                        btn.setStyle(btn.getStyle() + "-fx-background-color: #2c3e50;");
-                });
-                btn.setOnMouseExited(e -> {
-                    if (buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE || buttonType.getButtonData() == ButtonBar.ButtonData.YES)
-                        btn.setStyle(btn.getStyle() + "-fx-background-color: #3498db;");
-                    else
-                        btn.setStyle(btn.getStyle() + "-fx-background-color: #34495e;");
-                });
+                btn.setOnMouseEntered(e -> btn.setStyle(hoverStyle));
+                btn.setOnMouseExited(e -> btn.setStyle(baseStyle));
             }
         });
     }

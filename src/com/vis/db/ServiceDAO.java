@@ -32,16 +32,17 @@ public class ServiceDAO {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, customerId);
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                services.add(new Service(
-                        rs.getInt("service_id"),
-                        rs.getInt("vehicle_id"),
-                        rs.getString("service_date"),
-                        rs.getString("service_type"),
-                        rs.getString("description"),
-                        rs.getDouble("cost")
-                ));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    services.add(new Service(
+                            rs.getInt("service_id"),
+                            rs.getInt("vehicle_id"),
+                            rs.getString("service_date"),
+                            rs.getString("service_type"),
+                            rs.getString("description"),
+                            rs.getDouble("cost")
+                    ));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();

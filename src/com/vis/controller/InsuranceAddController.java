@@ -32,7 +32,7 @@ public class InsuranceAddController implements Initializable {
         // Apply Validation
         UIUtils.applyDigitValidation(txtVehicleID);
         UIUtils.applyLetterValidation(txtProvider);
-        UIUtils.applyDigitValidation(txtPolicyNumber);
+        // Policy number should be alphanumeric, so we remove the digit-only validation
     }
 
     @FXML

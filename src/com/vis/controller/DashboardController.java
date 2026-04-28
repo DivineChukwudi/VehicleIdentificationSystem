@@ -111,6 +111,7 @@ public class DashboardController implements Initializable {
 
     @FXML
     private void handleLogout(ActionEvent event) {
+        instance = null;
         try {
             Parent loginRoot = FXMLLoader.load(getClass().getResource("/com/vis/fxml/LoginView.fxml"));
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
