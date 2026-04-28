@@ -1,5 +1,5 @@
-# Build stage — Java 21 to match jPro 2025.3.3 / Helidon 4.x requirements
-FROM maven:3.9.6-eclipse-temurin-21 AS build
+# Build stage — Java 23
+FROM maven:3.9.9-eclipse-temurin-23 AS build
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
@@ -9,8 +9,8 @@ RUN apt-get update && apt-get install -y unzip && \
     mkdir -p /app/release && \
     unzip -qo target/*-jpro.zip -d /app/release
 
-# Run stage — must also be Java 21
-FROM eclipse-temurin:21-jdk
+# Run stage — Java 23
+FROM eclipse-temurin:23-jdk
 WORKDIR /app
 
 COPY --from=build /app/release /app/release
