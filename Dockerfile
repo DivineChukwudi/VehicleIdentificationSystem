@@ -30,20 +30,31 @@ EXPOSE 8080
 # The startup script might be in target/jpro/bin/ or target/jpro-release/bin/ or inside a zip
 # We use a robust script to find it, unzip if necessary, and execute
 CMD ["sh", "-c", "\
-    ZIP=$(find /app/target -name '*-jpro.zip' | head -n 1); \
+    echo 'Searching for jPro executable...'; \
+    ZIP=$(find /app/target -name '*jpro.zip' | head -n 1); \
     if [ -n \"$ZIP\" ]; then \
-        echo \"Unzipping $ZIP...\"; \
-        unzip -q \"$ZIP\" -d /app/release; \
-        EXE=$(find /app/release -name 'VehicleIdentificationSystem*' -type f -not -name '*.jar' | head -n 1); \
-    else \
-        EXE=$(find /app/target -name 'VehicleIdentificationSystem*' -type f -not -name '*.jar' -not -name '*.zip' | head -n 1); \
+        echo \"Found release zip: $ZIP. Extracting...\"; \
+        mkdir -p /app/release; \
+        unzip -qo \"$ZIP\" -d /app/release; \
+    fi; \
+    # Search for the executable in extracted release or target folder \
+    SEARCH_PATH=\"/app/target\"; \
+    if [ -d /app/release ]; then SEARCH_PATH=\"/app/release /app/target\"; fi; \
+    EXE=$(find $SEARCH_PATH -name 'VehicleIdentificationSystem' -type f -not -name '*.jar' -not -name '*.zip' | head -n 1); \
+    if [ -z \"$EXE\" ]; then \
+        EXE=$(find $SEARCH_PATH -name 'VehicleIdentificationSystem*' -type f -not -name '*.jar' -not -name '*.zip' | head -n 1); \
     fi; \
     if [ -n \"$EXE\" ]; then \
         chmod +x \"$EXE\"; \
-        echo \"Starting executable: $EXE\"; \
+        echo \"Starting application: $EXE\"; \
         exec \"$EXE\"; \
     else \
-        echo 'Executable not found. Directory structure:'; \
+        echo 'ERROR: Executable not found.'; \
+        echo 'Directory structure of /app/target:'; \
         find /app/target -maxdepth 3; \
+        if [ -d /app/release ]; then \
+            echo 'Directory structure of /app/release:'; \
+            find /app/release -maxdepth 4; \
+        fi; \
         exit 1; \
     fi"]
