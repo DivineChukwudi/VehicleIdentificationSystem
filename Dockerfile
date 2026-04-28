@@ -16,14 +16,16 @@ COPY --from=build /app/target/jpro /app/jpro
 RUN apt-get update && apt-get install -y \
     libgtk-3-0 \
     libglu1-mesa \
-    libasound2t64 \
+    libasound2 \
     libxext6 \
     libxrender1 \
     libxtst6 \
     libxi6 \
-    && rm -rf /var/lib/apt/lists/*
+    || apt-get install -y libasound2t64 \
+    && rm -rf /var/lib/apt/lists/* || true
 
 EXPOSE 8080
 
 # The startup script is in jpro/bin/
-CMD ["sh", "-c", "/app/jpro/bin/VehicleIdentificationSystem"]
+# We use a more robust startup command to find the executable and ensure it's runnable
+CMD ["sh", "-c", "EXE=$(find /app/jpro -name 'VehicleIdentificationSystem*' -type f -not -name '*.jar' | head -n 1); if [ -n \"$EXE\" ]; then chmod +x \"$EXE\"; exec \"$EXE\"; else echo 'Executable not found in /app/jpro'; ls -R /app/jpro; exit 1; fi"]
