@@ -112,6 +112,13 @@
                 <configuration>
                     <mainClassName>com.vis.view.SplashScreen</mainClassName>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>release</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
