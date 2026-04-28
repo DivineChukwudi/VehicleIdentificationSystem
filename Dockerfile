@@ -18,7 +18,7 @@ COPY --from=build /app/release /app/release
 RUN apt-get update && apt-get install -y \
     libgtk-3-0 \
     libglu1-mesa \
-    libasound2 \
+    libasound2t64 \
     libxext6 \
     libxrender1 \
     libxtst6 \
