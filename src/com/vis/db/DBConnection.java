@@ -1,57 +1,72 @@
 package com.vis.db;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-
 public class DBConnection {
-    private static String URL;
-    private static String USER;
-    private static String PASS;
+    private static HikariDataSource dataSource;
+
     static {
         try {
-            // 1. Try Environment Variables first (for GitHub/Render)
-            URL = System.getenv("DB_URL");
-            USER = System.getenv("DB_USER");
-            PASS = System.getenv("DB_PASS");
+            String url = System.getenv("DB_URL");
+            if (url == null) url = System.getenv("DATABASE_URL");
+            
+            String user = System.getenv("DB_USER");
+            String pass = System.getenv("DB_PASS");
 
-            // 2. Fallback to config.properties if env vars are missing
-            if (URL == null || USER == null || PASS == null) {
+            if (url == null || user == null || pass == null) {
                 Properties props = new Properties();
-                InputStream input = DBConnection.class.getResourceAsStream("/config.properties");
-
-                if (input != null) {
-                    props.load(input);
-                    URL = props.getProperty("DB_URL");
-                    USER = props.getProperty("DB_USER");
-                    PASS = props.getProperty("DB_PASS");
-                } else if (URL == null) {
-                    // Only throw error if we don't have URL from anywhere
-                    throw new RuntimeException("Database configuration NOT FOUND (Environment variables or config.properties missing)!");
+                try (InputStream input = DBConnection.class.getResourceAsStream("/config.properties")) {
+                    if (input != null) {
+                        props.load(input);
+                        if (url == null) url = props.getProperty("DB_URL");
+                        if (user == null) user = props.getProperty("DB_USER");
+                        if (pass == null) pass = props.getProperty("DB_PASS");
+                    }
                 }
             }
 
-            // Ensure URL starts with the JDBC prefix if it's a raw URL from Render
-            if (URL != null && URL.startsWith("postgresql://")) {
-                URL = "jdbc:" + URL;
+            if (url != null) {
+                if (url.startsWith("postgres://")) {
+                    url = "jdbc:postgresql://" + url.substring("postgres://".length());
+                } else if (url.startsWith("postgresql://")) {
+                    url = "jdbc:postgresql://" + url.substring("postgresql://".length());
+                }
             }
 
+            if (url == null) {
+                throw new RuntimeException("Database configuration NOT FOUND!");
+            }
+
+            HikariConfig config = new HikariConfig();
+            config.setJdbcUrl(url);
+            if (user != null) config.setUsername(user);
+            if (pass != null) config.setPassword(pass);
+            
+            // Optimization for performance
+            config.setMaximumPoolSize(10);
+            config.setMinimumIdle(2);
+            config.setIdleTimeout(300000);
+            config.setConnectionTimeout(20000);
+            config.addDataSourceProperty("cachePrepStmts", "true");
+            config.addDataSourceProperty("prepStmtCacheSize", "250");
+            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+
+            dataSource = new HikariDataSource(config);
+            System.out.println("HikariCP Connection Pool initialized.");
+            
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException("Failed to initialize database pool", e);
         }
     }
 
     public static Connection getConnection() throws SQLException {
-        try {
-            Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("PostgreSQL Driver not found!", e);
-        }
-
-        return DriverManager.getConnection(URL, USER, PASS);
+        return dataSource.getConnection();
     }
 }
 // URL -- TELLS CODE WHERE TO FIND DATABASE
