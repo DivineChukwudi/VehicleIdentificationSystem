@@ -3,8 +3,10 @@ FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
-# Build the jPro release and unzip it in the build stage to ensure it's successful
-RUN mvn clean package jpro:release -DskipTests && \
+
+# Install unzip and build the jPro release
+RUN apt-get update && apt-get install -y unzip && \
+    mvn clean package jpro:release -DskipTests && \
     mkdir -p /app/release && \
     unzip -qo target/*-jpro.zip -d /app/release
 
