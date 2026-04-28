@@ -4,19 +4,22 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Install unzip and build the jPro release
 RUN apt-get update && apt-get install -y unzip && \
     mvn clean package jpro:release -DskipTests && \
     mkdir -p /app/release && \
     unzip -qo target/*-jpro.zip -d /app/release
 
+# Debug: show what was extracted
+RUN echo "=== Release contents ===" && find /app/release -maxdepth 5 && \
+    echo "=== Shell scripts ===" && find /app/release -name "*.sh" && \
+    echo "=== Files without extension ===" && find /app/release -type f ! -name "*.*"
+
 # Run stage
 FROM eclipse-temurin:17-jdk
 WORKDIR /app
-# Copy the extracted release directly
+
 COPY --from=build /app/release /app/release
 
-# Install necessary libraries for JavaFX/jPro (including fontconfig)
 RUN apt-get update && apt-get install -y \
     libgtk-3-0 \
     libglu1-mesa \
@@ -26,26 +29,36 @@ RUN apt-get update && apt-get install -y \
     libxtst6 \
     libxi6 \
     libfontconfig1 \
-    || apt-get install -y libasound2t64 \
     && rm -rf /var/lib/apt/lists/* || true
 
 EXPOSE 8080
 
-# The startup script will be inside the extracted release
 CMD ["sh", "-c", "\
-    echo 'Searching for jPro executable in /app/release...'; \
-    # Search deeply for the executable script \
-    EXE=$(find /app/release -maxdepth 4 -name 'VehicleIdentificationSystem' -type f -not -name '*.jar' -not -name '*.zip' | head -n 1); \
+    echo '=== Searching for startup script ===' && \
+    find /app/release -maxdepth 5 -type f | sort && \
+    \
+    EXE=$(find /app/release -maxdepth 4 -name 'VehicleIdentificationSystem' -type f | head -n 1); \
+    \
     if [ -z \"$EXE\" ]; then \
-        EXE=$(find /app/release -maxdepth 4 -name 'VehicleIdentificationSystem*' -type f -not -name '*.jar' -not -name '*.zip' | head -n 1); \
+        echo 'Exact name not found, trying shell scripts...'; \
+        EXE=$(find /app/release -maxdepth 4 -name '*.sh' -type f | head -n 1); \
     fi; \
+    \
+    if [ -z \"$EXE\" ]; then \
+        echo 'No .sh found, trying any non-jar non-zip file in bin/...'; \
+        EXE=$(find /app/release -maxdepth 5 -type f \
+              ! -name '*.jar' ! -name '*.zip' ! -name '*.class' \
+              ! -name '*.properties' ! -name '*.xml' ! -name '*.css' \
+              ! -name '*.fxml' ! -name '*.png' ! -name '*.ico' \
+              | head -n 1); \
+    fi; \
+    \
     if [ -n \"$EXE\" ]; then \
         chmod +x \"$EXE\"; \
-        echo \"Starting application: $EXE\"; \
+        echo \"Starting: $EXE\"; \
         exec \"$EXE\"; \
     else \
-        echo 'ERROR: Executable not found in /app/release.'; \
-        echo 'Full directory tree of /app/release:'; \
-        find /app/release -maxdepth 5; \
+        echo 'ERROR: No executable found. Full tree:'; \
+        find /app/release -maxdepth 6; \
         exit 1; \
     fi"]
