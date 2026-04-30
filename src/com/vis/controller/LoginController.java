@@ -29,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class LoginController implements Initializable {
 
+    // UI elements
     @FXML private TextField     usernameField;
     @FXML private PasswordField passwordField;
     @FXML private VBox          registerFields;
@@ -55,17 +56,18 @@ public class LoginController implements Initializable {
     @FXML private HBox          forgotBox;
 
     private boolean isRegisterMode = false;
-    private final PauseTransition errorTimeout = new PauseTransition(Duration.seconds(3));
+    private final PauseTransition errorTimeout = new PauseTransition(Duration.seconds(3)); // Error timeout
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // No default selection for login
+        // Role selection styles
         roleGroup.selectedToggleProperty().addListener((obs, old, now) -> {
             for (Toggle t : roleGroup.getToggles())
                 ((ToggleButton) t).setStyle(com.vis.util.UIUtils.TOGGLE_BUTTON_STYLE);
             if (now != null) styleSelectedRole((ToggleButton) now);
         });
 
+        // Button effects
         DropShadow ds = new DropShadow();
         ds.setColor(Color.color(0.16, 0.50, 0.73, 0.85));
         ds.setRadius(20);
@@ -73,6 +75,7 @@ public class LoginController implements Initializable {
         ds.setSpread(0.1);
         btnPrimaryAction.setEffect(ds);
 
+        // Pulsing animation
         FadeTransition fade = new FadeTransition(Duration.seconds(1.5), btnPrimaryAction);
         fade.setFromValue(0.65);
         fade.setToValue(1.0);
@@ -80,6 +83,7 @@ public class LoginController implements Initializable {
         fade.setAutoReverse(true);
         fade.play();
 
+        // Enter key support
         usernameField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
                 handlePrimaryAction();
@@ -94,7 +98,7 @@ public class LoginController implements Initializable {
 
         setupValidation();
 
-        // Ensure window is resizable and centered when loaded
+        // Window positioning
         usernameField.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 newScene.windowProperty().addListener((obsW, oldWindow, newWindow) -> {
@@ -110,6 +114,7 @@ public class LoginController implements Initializable {
         });
     }
 
+    // Prevents numbers in names
     private void setupValidation() {
         UIUtils.applyLetterValidation(firstNameField);
         UIUtils.applyLetterValidation(lastNameField);
@@ -119,6 +124,7 @@ public class LoginController implements Initializable {
         btn.setStyle(com.vis.util.UIUtils.TOGGLE_BUTTON_SELECTED_STYLE);
     }
 
+    // Toggle Login/Register
     @FXML
     private void handleToggleMode() {
         isRegisterMode = !isRegisterMode;
@@ -136,7 +142,6 @@ public class LoginController implements Initializable {
             confirmPasswordSpacer.setVisible(true); confirmPasswordSpacer.setManaged(true);
             forgotBox.setVisible(false);            forgotBox.setManaged(false);
             
-            // Start in customer mode for registration
             btnRoleCustomer.setSelected(true);
             styleSelectedRole(btnRoleCustomer);
         } else {
@@ -155,24 +160,22 @@ public class LoginController implements Initializable {
             emailField.clear();
             confirmPasswordField.clear();
             
-            // Clear selections for login
             if (roleGroup.getSelectedToggle() != null) {
                 roleGroup.getSelectedToggle().setSelected(false);
             }
         }
     }
 
+    // Main action
     @FXML
     private void handlePrimaryAction() {
         if (btnPrimaryAction.isDisable()) return;
         hideError();
 
-        // Capture fields on FX thread
         String username = usernameField.getText().trim();
         String password = passwordField.getText();
         String selectedRole = getSelectedRole();
         
-        // Basic validation before starting background task
         if (username.isEmpty() || password.isEmpty()) { 
             showError("Please enter your username and password."); 
             return; 
@@ -195,11 +198,11 @@ public class LoginController implements Initializable {
             if (!password.equals(confirm))               { showError("Passwords do not match.");                 return; }
         }
 
-        // Prepare UI
         btnPrimaryAction.setDisable(true);
         String originalLabel = btnLabel.getText();
         btnLabel.setText(isRegisterMode ? "Registering..." : "Signing In...");
 
+        // Background task
         CompletableFuture.runAsync(() -> {
             try {
                 if (isRegisterMode) {
@@ -219,6 +222,7 @@ public class LoginController implements Initializable {
         });
     }
 
+    // Handles login
     private void performLogin(String username, String password, String selectedRole) {
         User user = new UserDAO().loginUser(username, password);
         
@@ -233,7 +237,7 @@ public class LoginController implements Initializable {
                 return;
             }
 
-            // ADMIN AUTO-BYPASS
+            // Admin auto-bypass
             if (user.getRole().equalsIgnoreCase("admin")) {
                 try {
                     routeUser(user, "admin");
@@ -244,7 +248,6 @@ public class LoginController implements Initializable {
                 return;
             }
 
-            // Normal role check for other users
             if (selectedRole == null) {
                 showError("Please select your role to continue.");
                 return;
@@ -264,6 +267,7 @@ public class LoginController implements Initializable {
         });
     }
 
+    // Handles registration
     private void performRegister() {
         String firstName = firstNameField.getText().trim();
         String lastName  = lastNameField.getText().trim();
@@ -272,7 +276,7 @@ public class LoginController implements Initializable {
         String password  = passwordField.getText();
         String role      = getSelectedRole();
 
-        // Extra safety: cannot register as admin via public page
+        // Safety block
         if ("admin".equalsIgnoreCase(role)) {
             Platform.runLater(() -> showError("Admin registration is not allowed here."));
             return;
@@ -300,6 +304,7 @@ public class LoginController implements Initializable {
         });
     }
 
+    // Helper to get role
     private String getSelectedRole() {
         Toggle t = roleGroup.getSelectedToggle();
         if (t == null)            return null;
@@ -310,12 +315,15 @@ public class LoginController implements Initializable {
         return null;
     }
 
+    // Show error
     private void showError(String msg) { 
         lblError.setText(msg); 
         errorBox.setVisible(true);  
         errorBox.setManaged(true);
         errorTimeout.playFromStart();
     }
+
+    // Hide error
     private void hideError() { 
         errorTimeout.stop();
         lblError.setText("");  
@@ -323,6 +331,7 @@ public class LoginController implements Initializable {
         errorBox.setManaged(false); 
     }
 
+    // Redirect user
     private void routeUser(User user, String role) throws IOException {
         String fxml;
         switch (role.toLowerCase()) {

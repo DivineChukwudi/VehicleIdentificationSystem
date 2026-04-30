@@ -12,7 +12,7 @@ public class CustomerDAO {
 
 
     public boolean updateCustomer(Customer c) {
-        return updateCustomer(c.getCustomerID(), c.getName(), c.getSurname(), c.getAddress(), c.getPhone(), c.getEmail());
+        return updateCustomer(c .getCustomerID(), c.getName(), c.getSurname(), c.getAddress(), c.getPhone(), c.getEmail());
     }
 
     public boolean updateCustomer(int id, String name, String surname,

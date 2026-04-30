@@ -23,32 +23,35 @@ import java.util.ResourceBundle;
 
 public class CustomerPortalController implements Initializable {
 
+    // UI elements
     @FXML private Label lblCustomerName;
-    @FXML private StackPane contentArea;
+    @FXML private StackPane contentArea; 
     @FXML private Button navMyVehicles;
     @FXML private Button navMyViolations;
     @FXML private Button navMyServiceRecords;
     @FXML private Button navMyProfile;
 
     private User currentUser;
-    private Button activeButton;
+    private Button activeButton; 
     private int customerId = -1;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
     }
 
+    // Injects user
     public void setUser(User user) {
         currentUser = user;
         if (user != null) {
             lblCustomerName.setText("Welcome, " + user.getUsername());
             customerId = new UserDAO().getCustomerId(user.getUserID());
-            checkViolations();
-            handleVehicles(null);
+            checkViolations(); 
+            handleVehicles(null); 
             setActive(navMyVehicles);
         }
     }
 
+    // Check for fines
     private void checkViolations() {
         if (customerId == -1) return;
         List<String> violations = new UserDAO().getUnpaidViolations(customerId);
@@ -62,6 +65,7 @@ public class CustomerPortalController implements Initializable {
         }
     }
 
+    // Sidebar highlight
     private void setActive(Button btn) {
         if (activeButton != null) activeButton.setStyle(UIUtils.SIDEBAR_DEFAULT_STYLE);
         activeButton = btn;
@@ -70,6 +74,7 @@ public class CustomerPortalController implements Initializable {
 
     public int getCustomerId() { return customerId; }
 
+    // Load Vehicles
     @FXML private void handleVehicles(ActionEvent e) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/vis/fxml/CustomerVehiclesView.fxml"));
@@ -81,6 +86,7 @@ public class CustomerPortalController implements Initializable {
         } catch (IOException ex) { ex.printStackTrace(); }
     }
 
+    // Load Violations
     @FXML private void handleViolations(ActionEvent e) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/vis/fxml/CustomerViolationsView.fxml"));
@@ -92,6 +98,7 @@ public class CustomerPortalController implements Initializable {
         } catch (IOException ex) { ex.printStackTrace(); }
     }
 
+    // Load Service Records
     @FXML private void handleServiceRecords(ActionEvent e) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/vis/fxml/CustomerServiceView.fxml"));
@@ -103,6 +110,7 @@ public class CustomerPortalController implements Initializable {
         } catch (IOException ex) { ex.printStackTrace(); }
     }
 
+    // Load Profile
     @FXML private void handleProfile(ActionEvent e) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/vis/fxml/CustomerProfileView.fxml"));

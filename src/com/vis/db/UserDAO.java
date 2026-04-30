@@ -8,7 +8,7 @@ import java.util.List;
 
 public class UserDAO {
 
-    // ── Login ──────────────────────────────────────────────────────
+    // Authenticates user
     public User loginUser(String username, String password) {
         String hashedPassword = PasswordUtil.hashPassword(password);
         String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
@@ -21,7 +21,7 @@ public class UserDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    // Check if the column is_active exists, if not default to true
+                    // Check active status
                     boolean isActive = true;
                     try {
                         isActive = rs.getBoolean("is_active");
@@ -43,6 +43,7 @@ public class UserDAO {
         return null;
     }
 
+    // Get customer record ID
     public int getCustomerId(int userId) {
         String sql = "SELECT customer_id FROM Users WHERE userid = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -57,6 +58,7 @@ public class UserDAO {
         return -1;
     }
 
+    // Get unpaid fines summary
     public List<String> getUnpaidViolations(int customerId) {
         List<String> violations = new ArrayList<>();
         String sql = "SELECT v.violation_type, v.fine_amount, v.violation_date " +
@@ -79,9 +81,7 @@ public class UserDAO {
         return violations;
     }
 
-
-
-    // ── Register — inserts username, password, role, first_name, last_name, email ──
+    // Registers user and customer profile
     public boolean registerUser(String username, String password, String role,
                                 String firstName, String lastName, String email) {
         String hashedPassword = PasswordUtil.hashPassword(password);
@@ -89,6 +89,7 @@ public class UserDAO {
         try (Connection conn = DBConnection.getConnection()) {
             conn.setAutoCommit(false);
 
+            // 1. Create account
             String userSql = "INSERT INTO users (username, password, role, first_name, last_name, email) " +
                     "VALUES (?, ?, ?, ?, ?, ?) RETURNING userid";
             int newUserId = -1;
@@ -105,6 +106,7 @@ public class UserDAO {
                 }
             }
 
+            // 2. Link customer profile
             if (role.equalsIgnoreCase("customer") && newUserId != -1) {
                 String custSql = "INSERT INTO Customer(name, surname, email) VALUES(?, ?, ?) RETURNING customer_id";
                 try (PreparedStatement stmt = conn.prepareStatement(custSql)) {
@@ -134,6 +136,7 @@ public class UserDAO {
         }
     }
 
+    // List all users
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
         String sql = "SELECT * FROM users ORDER BY userid DESC";
@@ -147,7 +150,7 @@ public class UserDAO {
                 users.add(new User(
                         rs.getInt("userid"),
                         rs.getString("username"),
-                        "********", // Hide password
+                        "********", 
                         rs.getString("role"),
                         isActive
                 ));
@@ -158,6 +161,7 @@ public class UserDAO {
         return users;
     }
 
+    // Enable/Disable user
     public boolean toggleUserStatus(int userId, boolean active) {
         String sql = "UPDATE users SET is_active = ? WHERE userid = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -171,6 +175,7 @@ public class UserDAO {
         }
     }
 
+    // Manual user creation
     public boolean createUserForCustomer(int customerId, String username, String password) {
         String hashedPassword = PasswordUtil.hashPassword(password);
         String sql = "INSERT INTO users (username, password, role, customer_id) VALUES (?, ?, 'customer', ?)";
@@ -189,6 +194,7 @@ public class UserDAO {
         }
     }
 
+    // Check if account exists
     public boolean hasUserAccount(int customerId) {
         String sql = "SELECT 1 FROM users WHERE customer_id = ?";
         try (Connection conn = DBConnection.getConnection();

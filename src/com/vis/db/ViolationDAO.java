@@ -8,6 +8,7 @@ import java.util.List;
 
 public class ViolationDAO {
 
+    // Record violation
     public boolean addViolation(int vehicleId, String violationDate, String violationType, double fineAmount, String description) {
         String sql = "INSERT INTO Violation(vehicle_id, violation_date, violation_type, fine_amount, amount_paid, status, description) VALUES(?, CAST(? AS DATE), ?, ?, 0.0, 'UNPAID', ?)";
         try (Connection conn = DBConnection.getConnection();
@@ -24,6 +25,7 @@ public class ViolationDAO {
         }
     }
 
+    // Get violations by customer
     public List<Violation> getViolationsByCustomer(int customerId) {
         List<Violation> violations = new ArrayList<>();
         String sql = "SELECT v.* FROM Violation v " +
@@ -43,6 +45,7 @@ public class ViolationDAO {
         return violations;
     }
 
+    // List all violations
     public List<Violation> getAllViolations() {
         List<Violation> violations = new ArrayList<>();
         String sql = "SELECT * FROM Violation";
@@ -62,6 +65,7 @@ public class ViolationDAO {
         return violations;
     }
 
+    // Extract violation from result set
     private Violation extractViolationFromResultSet(ResultSet rs) throws SQLException {
         double amountPaid = 0;
         try { amountPaid = rs.getDouble("amount_paid"); } catch (SQLException ignored) {}
@@ -78,8 +82,8 @@ public class ViolationDAO {
         );
     }
 
+    // Record payment
     public boolean recordPayment(int violationId, double paymentAmount) {
-        // First get the current violation details
         String selectSql = "SELECT fine_amount, amount_paid FROM Violation WHERE violation_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement selectStmt = conn.prepareStatement(selectSql)) {
@@ -109,12 +113,8 @@ public class ViolationDAO {
         return false;
     }
 
-    /**
-     * Calls the PostgreSQL PROCEDURE mark_violation_paid (stored_procedures.sql).
-     * @param violationId the ID of the violation to mark as paid
-     */
+    // Mark as paid
     public void markAsPaid(int violationId) {
-        // If we have partial payments, we should probably update amount_paid to full fine_amount too
         String sql = "UPDATE Violation SET amount_paid = fine_amount, status = 'PAID' WHERE violation_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -126,6 +126,7 @@ public class ViolationDAO {
         }
     }
 
+    // Delete violation
     public boolean deleteViolation(int violationId) {
         String sql = "DELETE FROM Violation WHERE violation_id = ?";
         try (Connection conn = DBConnection.getConnection();

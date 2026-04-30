@@ -19,6 +19,7 @@ import java.util.ResourceBundle;
 
 public class ViolationsController implements Initializable {
 
+    // Table elements
     @FXML private TableView<Violation>             violationsTable;
     @FXML private TableColumn<Violation, Integer>  colViolationID;
     @FXML private TableColumn<Violation, String>   colVehicleID;
@@ -27,7 +28,8 @@ public class ViolationsController implements Initializable {
     @FXML private TableColumn<Violation, Double>   colFineAmount;
     @FXML private TableColumn<Violation, Double>   colAmountPaid;
     @FXML private TableColumn<Violation, String>   colStatus;
-    @FXML private TextField searchField;
+    
+    @FXML private TextField searchField; // Filter list
     @FXML private Label lblTotalViolations;
     @FXML private Label lblPendingViolations;
     @FXML private Label lblPaidViolations;
@@ -37,6 +39,7 @@ public class ViolationsController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        // Link columns
         colViolationID  .setCellValueFactory(new PropertyValueFactory<>("violationId"));
         colVehicleID    .setCellValueFactory(new PropertyValueFactory<>("vehicleId"));
         colViolationDate.setCellValueFactory(new PropertyValueFactory<>("violationDate"));
@@ -45,11 +48,14 @@ public class ViolationsController implements Initializable {
         colAmountPaid   .setCellValueFactory(new PropertyValueFactory<>("amountPaid"));
         colStatus       .setCellValueFactory(new PropertyValueFactory<>("status"));
 
+        // Live search
         filteredData = new FilteredList<>(violationData, p -> true);
         violationsTable.setItems(filteredData);
 
         loadViolations();
-        setupStatusCellFactory();
+        setupStatusCellFactory(); // Colored badges
+        
+        // Search handler
         if (searchField != null) {
             searchField.textProperty().addListener((obs, old, nw) -> {
                 filteredData.setPredicate(v -> {
@@ -63,6 +69,7 @@ public class ViolationsController implements Initializable {
         }
     }
 
+    // Colors status badges
     private void setupStatusCellFactory() {
         colStatus.setCellFactory(column -> new TableCell<Violation, String>() {
             @Override
@@ -73,7 +80,7 @@ public class ViolationsController implements Initializable {
                     setGraphic(null);
                 } else {
                     Label badge = new Label(item.toUpperCase());
-                    String style = UIUtils.BADGE_PENDING_STYLE; // Default red for UNPAID
+                    String style = UIUtils.BADGE_PENDING_STYLE; // Default red
                     
                     if ("PAID".equalsIgnoreCase(item)) {
                         style = UIUtils.BADGE_SUCCESS_STYLE;
@@ -88,11 +95,13 @@ public class ViolationsController implements Initializable {
         });
     }
 
+    // Load data
     private void loadViolations() {
         try {
             ViolationDAO dao = new ViolationDAO();
             violationData.setAll(dao.getAllViolations());
             
+            // Update counts
             if (lblTotalViolations != null) {
                 lblTotalViolations.setText(String.valueOf(violationData.size()));
             }
@@ -120,6 +129,7 @@ public class ViolationsController implements Initializable {
         loadViolations();
     }
 
+    // Record payment
     @FXML
     public void handleRecordPayment(ActionEvent event) {
         Violation selected = violationsTable.getSelectionModel().getSelectedItem();
@@ -134,6 +144,7 @@ public class ViolationsController implements Initializable {
 
         double remaining = selected.getRemainingAmount();
 
+        // Payment dialog
         TextInputDialog dialog = new TextInputDialog(String.valueOf(remaining));
         UIUtils.styleDialog(dialog, "Record Payment", "Enter payment amount for Violation #" + selected.getViolationId(), "fas-money-bill-wave");
         dialog.setContentText("Amount to pay (Remaining: M" + String.format("%.2f", remaining) + "):");
@@ -141,6 +152,7 @@ public class ViolationsController implements Initializable {
         dialog.showAndWait().ifPresent(amountStr -> {
             try {
                 double amount = Double.parseDouble(amountStr);
+                // Validate
                 if (amount <= 0) {
                     UIUtils.showAlert(Alert.AlertType.ERROR, "Invalid Amount", null, "Payment amount must be greater than zero.");
                     return;
@@ -150,6 +162,7 @@ public class ViolationsController implements Initializable {
                     return;
                 }
 
+                // Save
                 if (new ViolationDAO().recordPayment(selected.getViolationId(), amount)) {
                     loadViolations();
                     UIUtils.showAlert(Alert.AlertType.INFORMATION, "Success", null, "Payment recorded successfully!");
@@ -164,10 +177,11 @@ public class ViolationsController implements Initializable {
 
     @FXML
     public void handleMarkPaid(ActionEvent event) {
-        // Kept for backward compatibility if needed, but redirected to handleRecordPayment
+        // Use partial payment logic
         handleRecordPayment(event);
     }
 
+    // Delete violation
     @FXML
     public void handleDeleteViolation(ActionEvent event) {
         Violation selected = violationsTable.getSelectionModel().getSelectedItem();

@@ -14,6 +14,7 @@ import java.util.ResourceBundle;
 
 public class CustomerViolationsController implements Initializable {
 
+    // Table elements for the customer's personal violations
     @FXML private TableView<Violation> violationsTable;
     @FXML private TableColumn<Violation, Integer> colViolationID;
     @FXML private TableColumn<Violation, Integer> colVehicleID;
@@ -22,12 +23,13 @@ public class CustomerViolationsController implements Initializable {
     @FXML private TableColumn<Violation, Double> colFineAmount;
     @FXML private TableColumn<Violation, Double> colAmountPaid;
     @FXML private TableColumn<Violation, String> colStatus;
-    @FXML private Label lblSummary;
+    @FXML private Label lblSummary; // Status summary at the top
 
     private int customerId = -1;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        // Map columns to Violation object fields
         colViolationID.setCellValueFactory(new PropertyValueFactory<>("violationId"));
         colVehicleID.setCellValueFactory(new PropertyValueFactory<>("vehicleId"));
         colViolationDate.setCellValueFactory(new PropertyValueFactory<>("violationDate"));
@@ -36,9 +38,12 @@ public class CustomerViolationsController implements Initializable {
         colAmountPaid.setCellValueFactory(new PropertyValueFactory<>("amountPaid"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
         
-        setupStatusCellFactory();
+        setupStatusCellFactory(); // Colored badges for statuses
     }
 
+    /**
+     * Styles the status column with badges (PAID, PARTIAL, UNPAID).
+     */
     private void setupStatusCellFactory() {
         colStatus.setCellFactory(column -> new TableCell<Violation, String>() {
             @Override
@@ -64,15 +69,23 @@ public class CustomerViolationsController implements Initializable {
         });
     }
 
+    /**
+     * Sets the customer ID and triggers the data load.
+     */
     public void setCustomerId(int customerId) {
         this.customerId = customerId;
         loadViolations();
     }
 
+    /**
+     * Fetches only the violations for this specific customer.
+     */
     private void loadViolations() {
         if (customerId == -1) return;
         List<Violation> all = new ViolationDAO().getViolationsByCustomer(customerId);
         violationsTable.setItems(FXCollections.observableArrayList(all));
+        
+        // Calculate counts for the summary label
         long pending = all.stream()
                 .filter(v -> !"PAID".equalsIgnoreCase(v.getStatus()))
                 .count();

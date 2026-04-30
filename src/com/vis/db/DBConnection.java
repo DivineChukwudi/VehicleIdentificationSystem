@@ -9,16 +9,19 @@ import java.sql.Statement;
 import java.util.Properties;
 
 public class DBConnection {
+    // Database connection pool
     private static HikariDataSource dataSource;
 
     static {
         try {
+            // Get credentials from environment
             String url = System.getenv("DB_URL");
             if (url == null) url = System.getenv("DATABASE_URL");
             
             String user = System.getenv("DB_USER");
             String pass = System.getenv("DB_PASS");
 
+            // Fallback to config file
             if (url == null || user == null || pass == null) {
                 Properties props = new Properties();
                 try (InputStream input = DBConnection.class.getResourceAsStream("/config.properties")) {
@@ -31,6 +34,7 @@ public class DBConnection {
                 }
             }
 
+            // Convert postgres URL format
             if (url != null) {
                 if (url.startsWith("postgres://")) {
                     url = "jdbc:postgresql://" + url.substring("postgres://".length());
@@ -39,16 +43,17 @@ public class DBConnection {
                 }
             }
 
+            // Error if config missing
             if (url == null) {
                 throw new RuntimeException("Database configuration NOT FOUND!");
             }
 
+            // Pool configuration
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(url);
             if (user != null) config.setUsername(user);
             if (pass != null) config.setPassword(pass);
             
-            // Optimization for performance
             config.setMaximumPoolSize(20);
             config.setMinimumIdle(5);
             config.setIdleTimeout(300000);
@@ -57,9 +62,11 @@ public class DBConnection {
             config.addDataSourceProperty("prepStmtCacheSize", "250");
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
+            // Start pool
             dataSource = new HikariDataSource(config);
             System.out.println("HikariCP Connection Pool initialized.");
             
+            // Check schema
             ensureSchemaUpToDate();
             
         } catch (Exception e) {
@@ -68,23 +75,41 @@ public class DBConnection {
         }
     }
 
+    // Fixes missing columns/tables
     private static void ensureSchemaUpToDate() {
         System.out.println("Checking database schema...");
         try (Connection conn = dataSource.getConnection();
              Statement stmt = conn.createStatement()) {
             
-            // 1. Ensure users.is_active exists
+            // Add is_active column
             try {
                 stmt.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE");
             } catch (SQLException e) {
-                System.out.println("Note: Could not add is_active column (might already exist): " + e.getMessage());
+                System.out.println("Note: Could not add is_active column: " + e.getMessage());
             }
 
-            // 2. Ensure Violation.amount_paid exists
+            // Add amount_paid column
             try {
                 stmt.execute("ALTER TABLE Violation ADD COLUMN IF NOT EXISTS amount_paid NUMERIC DEFAULT 0.0");
             } catch (SQLException e) {
-                System.out.println("Note: Could not add amount_paid column (might already exist): " + e.getMessage());
+                System.out.println("Note: Could not add amount_paid column: " + e.getMessage());
+            }
+
+            // Create insurance table
+            try {
+                stmt.execute("CREATE TABLE IF NOT EXISTS Insurance (" +
+                        "policy_id SERIAL PRIMARY KEY, " +
+                        "vehicle_id INT NOT NULL, " +
+                        "provider VARCHAR(100) NOT NULL, " +
+                        "policy_number VARCHAR(50) UNIQUE NOT NULL, " +
+                        "start_date DATE NOT NULL, " +
+                        "end_date DATE NOT NULL, " +
+                        "status VARCHAR(20) DEFAULT 'Active', " +
+                        "FOREIGN KEY (vehicle_id) REFERENCES Vehicle(vehicle_id) ON DELETE CASCADE" +
+                        ")");
+                System.out.println("Insurance table verified/created.");
+            } catch (SQLException e) {
+                System.err.println("Error creating Insurance table: " + e.getMessage());
             }
 
             System.out.println("Database schema check complete.");
@@ -93,10 +118,12 @@ public class DBConnection {
         }
     }
 
+    // Get connection
     public static Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
 }
+
 // URL -- TELLS CODE WHERE TO FIND DATABASE
 // USER/PASSWORD -- BASICALLY CREDENTIALS TO ACCESS THE DATABASE
 //getConnection() -- WHEN CALLED, OPENS A CONNECTION TO DATABASE
