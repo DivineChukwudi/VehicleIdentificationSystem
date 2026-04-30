@@ -18,8 +18,8 @@
                     <MenuItem text="Logout" onAction="#handleLogout"/>
                 </Menu>
                 <Menu text="View">
-                    <MenuItem text="My Vehicles" onAction="#handleMyVehicles"/>
-                    <MenuItem text="My Violations" onAction="#handleMyViolations"/>
+                    <MenuItem text="My Vehicles" onAction="#handleVehicles"/>
+                    <MenuItem text="My Violations" onAction="#handleViolations"/>
                     <MenuItem text="Service Records" onAction="#handleServiceRecords"/>
                 </Menu>
                 <Menu text="Help">
@@ -57,7 +57,7 @@
             <Label text="MY ACCOUNT" textFill="#5a6a8a"
                    style="-fx-font-size: 10; -fx-font-weight: bold; -fx-padding: 8 10 4 10;"/>
 
-            <Button fx:id="navMyVehicles" maxWidth="1.7976931348623157E308" onAction="#handleMyVehicles"
+            <Button fx:id="navMyVehicles" maxWidth="1.7976931348623157E308" onAction="#handleVehicles"
                     style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-alignment: CENTER_LEFT; -fx-background-radius: 6; -fx-cursor: hand;">
                 <graphic>
                     <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 8 10;">
@@ -67,7 +67,7 @@
                 </graphic>
             </Button>
 
-            <Button fx:id="navMyViolations" maxWidth="1.7976931348623157E308" onAction="#handleMyViolations"
+            <Button fx:id="navMyViolations" maxWidth="1.7976931348623157E308" onAction="#handleViolations"
                     style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-alignment: CENTER_LEFT; -fx-background-radius: 6; -fx-cursor: hand;">
                 <graphic>
                     <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 8 10;">
@@ -77,7 +77,7 @@
                 </graphic>
             </Button>
 
-            <Button fx:id="navMyServiceRecords" maxWidth="1.7976931348623157E308" onAction="#handleMyServiceRecords"
+            <Button fx:id="navMyServiceRecords" maxWidth="1.7976931348623157E308" onAction="#handleServiceRecords"
                     style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-alignment: CENTER_LEFT; -fx-background-radius: 6; -fx-cursor: hand;">
                 <graphic>
                     <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 8 10;">
@@ -87,7 +87,7 @@
                 </graphic>
             </Button>
 
-            <Button fx:id="navMyProfile" maxWidth="1.7976931348623157E308" onAction="#handleMyProfile"
+            <Button fx:id="navMyProfile" maxWidth="1.7976931348623157E308" onAction="#handleProfile"
                     style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-alignment: CENTER_LEFT; -fx-background-radius: 6; -fx-cursor: hand;">
                 <graphic>
                     <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 8 10;">

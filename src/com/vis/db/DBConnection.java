@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
 public class DBConnection {
@@ -48,8 +49,8 @@ public class DBConnection {
             if (pass != null) config.setPassword(pass);
             
             // Optimization for performance
-            config.setMaximumPoolSize(10);
-            config.setMinimumIdle(2);
+            config.setMaximumPoolSize(20);
+            config.setMinimumIdle(5);
             config.setIdleTimeout(300000);
             config.setConnectionTimeout(20000);
             config.addDataSourceProperty("cachePrepStmts", "true");
@@ -59,9 +60,36 @@ public class DBConnection {
             dataSource = new HikariDataSource(config);
             System.out.println("HikariCP Connection Pool initialized.");
             
+            ensureSchemaUpToDate();
+            
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Failed to initialize database pool", e);
+        }
+    }
+
+    private static void ensureSchemaUpToDate() {
+        System.out.println("Checking database schema...");
+        try (Connection conn = dataSource.getConnection();
+             Statement stmt = conn.createStatement()) {
+            
+            // 1. Ensure users.is_active exists
+            try {
+                stmt.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE");
+            } catch (SQLException e) {
+                System.out.println("Note: Could not add is_active column (might already exist): " + e.getMessage());
+            }
+
+            // 2. Ensure Violation.amount_paid exists
+            try {
+                stmt.execute("ALTER TABLE Violation ADD COLUMN IF NOT EXISTS amount_paid NUMERIC DEFAULT 0.0");
+            } catch (SQLException e) {
+                System.out.println("Note: Could not add amount_paid column (might already exist): " + e.getMessage());
+            }
+
+            System.out.println("Database schema check complete.");
+        } catch (SQLException e) {
+            System.err.println("Error during schema migration: " + e.getMessage());
         }
     }
 

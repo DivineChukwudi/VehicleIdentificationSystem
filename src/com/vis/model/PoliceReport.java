@@ -13,9 +13,12 @@ public class PoliceReport {
     public int getReportID(){
         return reportID;
     }
+    public int getReportId() { return reportID; } // Alias for consistency
+
     public int getVehicleID() {
         return vehicleID;
     }
+    public int getVehicleId() { return vehicleID; } // Alias for consistency
     public String getReportDate() {
         return reportDate;
     }

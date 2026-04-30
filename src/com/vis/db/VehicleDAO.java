@@ -103,6 +103,19 @@ public class VehicleDAO {
         }
     }
 
+    public boolean updateVehicleOwner(int vehicleID, int ownerID) {
+        String sql = "UPDATE Vehicle SET owner_id = ? WHERE vehicle_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, ownerID);
+            stmt.setInt(2, vehicleID);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("VehicleDAO.updateVehicleOwner() failed: " + e.getMessage());
+            return false;
+        }
+    }
+
 
     public List<Vehicle> getVehiclesViaStoredProcedure() {
         List<Vehicle> vehicles = new ArrayList<>();

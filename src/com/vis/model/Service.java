@@ -13,9 +13,12 @@ public class Service {
     public int getServiceID(){
         return serviceID;
     }
+    public int getServiceId() { return serviceID; } // Alias for consistency
+
     public int getVehicleID(){
         return vehicleID;
     }
+    public int getVehicleId() { return vehicleID; } // Alias for consistency
     public String getServiceDate(){
         return serviceDate;
     }

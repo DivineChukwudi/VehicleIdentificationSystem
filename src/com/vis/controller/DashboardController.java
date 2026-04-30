@@ -36,6 +36,7 @@ public class DashboardController implements Initializable {
     @FXML private Button btnPoliceReports;
     @FXML private Button btnServiceRecords;
     @FXML private Button btnViolations;
+    @FXML private Button btnUsers;
     @FXML private Button btnPagination;
 
     private Button activeButton;
@@ -89,6 +90,10 @@ public class DashboardController implements Initializable {
                 }); 
                 setActive(btnViolations); 
                 break;
+            case "Users":
+                loadView("UsersView.fxml");
+                setActive(btnUsers);
+                break;
             case "Dashboard": handleDashboard(null); break;
         }
     }
@@ -99,6 +104,7 @@ public class DashboardController implements Initializable {
     @FXML public void handlePoliceReports(ActionEvent event) { loadView("PoliceReportsView.fxml"); setActive(btnPoliceReports); }
     @FXML public void handleServiceRecords(ActionEvent event) { loadView("ServiceRecordsView.fxml"); setActive(btnServiceRecords); }
     @FXML public void handleViolations(ActionEvent event) { loadView("ViolationsView.fxml"); setActive(btnViolations); }
+    @FXML public void handleUsers(ActionEvent event) { loadView("UsersView.fxml"); setActive(btnUsers); }
     @FXML public void handlePagination(ActionEvent event) { loadView("PaginationView.fxml"); setActive(btnPagination); }
 
     @FXML private void handleExit(ActionEvent event) { Platform.exit(); }

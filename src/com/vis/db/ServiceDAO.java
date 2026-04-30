@@ -9,7 +9,7 @@ import java.util.List;
 public class ServiceDAO {
 
     public boolean addService(int vehicleId, String serviceDate, String serviceType, String description, double cost) {
-        String sql = "INSERT INTO ServiceRecord(vehicle_id, service_date, service_type, description, cost) VALUES(?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO ServiceRecord(vehicle_id, service_date, service_type, description, cost) VALUES(?, CAST(? AS DATE), ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, vehicleId);

@@ -9,7 +9,7 @@ import java.util.List;
 public class ViolationDAO {
 
     public boolean addViolation(int vehicleId, String violationDate, String violationType, double fineAmount, String description) {
-        String sql = "INSERT INTO Violation(vehicle_id, violation_date, violation_type, fine_amount, status, description) VALUES(?, ?, ?, ?, 'UNPAID', ?)";
+        String sql = "INSERT INTO Violation(vehicle_id, violation_date, violation_type, fine_amount, amount_paid, status, description) VALUES(?, CAST(? AS DATE), ?, ?, 0.0, 'UNPAID', ?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, vehicleId);
@@ -34,15 +34,7 @@ public class ViolationDAO {
             stmt.setInt(1, customerId);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
-                    violations.add(new Violation(
-                            rs.getInt("violation_id"),
-                            rs.getInt("vehicle_id"),
-                            rs.getString("violation_date"),
-                            rs.getString("violation_type"),
-                            rs.getDouble("fine_amount"),
-                            rs.getString("status"),
-                            rs.getString("description")
-                    ));
+                    violations.add(extractViolationFromResultSet(rs));
                 }
             }
         } catch (SQLException e) {
@@ -60,15 +52,7 @@ public class ViolationDAO {
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-                violations.add(new Violation(
-                        rs.getInt("violation_id"),
-                        rs.getInt("vehicle_id"),
-                        rs.getString("violation_date"),
-                        rs.getString("violation_type"),
-                        rs.getDouble("fine_amount"),
-                        rs.getString("status"),
-                        rs.getString("description")
-                ));
+                violations.add(extractViolationFromResultSet(rs));
             }
 
         } catch (SQLException e) {
@@ -78,16 +62,64 @@ public class ViolationDAO {
         return violations;
     }
 
+    private Violation extractViolationFromResultSet(ResultSet rs) throws SQLException {
+        double amountPaid = 0;
+        try { amountPaid = rs.getDouble("amount_paid"); } catch (SQLException ignored) {}
+        
+        return new Violation(
+                rs.getInt("violation_id"),
+                rs.getInt("vehicle_id"),
+                rs.getString("violation_date"),
+                rs.getString("violation_type"),
+                rs.getDouble("fine_amount"),
+                amountPaid,
+                rs.getString("status"),
+                rs.getString("description")
+        );
+    }
+
+    public boolean recordPayment(int violationId, double paymentAmount) {
+        // First get the current violation details
+        String selectSql = "SELECT fine_amount, amount_paid FROM Violation WHERE violation_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement selectStmt = conn.prepareStatement(selectSql)) {
+            
+            selectStmt.setInt(1, violationId);
+            try (ResultSet rs = selectStmt.executeQuery()) {
+                if (rs.next()) {
+                    double totalFine = rs.getDouble("fine_amount");
+                    double alreadyPaid = rs.getDouble("amount_paid");
+                    double newPaidTotal = alreadyPaid + paymentAmount;
+                    
+                    String newStatus = (newPaidTotal >= totalFine) ? "PAID" : "PARTIALLY PAID";
+                    
+                    String updateSql = "UPDATE Violation SET amount_paid = ?, status = ? WHERE violation_id = ?";
+                    try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                        updateStmt.setDouble(1, newPaidTotal);
+                        updateStmt.setString(2, newStatus);
+                        updateStmt.setInt(3, violationId);
+                        return updateStmt.executeUpdate() > 0;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("ViolationDAO.recordPayment() failed: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     /**
      * Calls the PostgreSQL PROCEDURE mark_violation_paid (stored_procedures.sql).
      * @param violationId the ID of the violation to mark as paid
      */
     public void markAsPaid(int violationId) {
-        String sql = "CALL mark_violation_paid(?)";
+        // If we have partial payments, we should probably update amount_paid to full fine_amount too
+        String sql = "UPDATE Violation SET amount_paid = fine_amount, status = 'PAID' WHERE violation_id = ?";
         try (Connection conn = DBConnection.getConnection();
-             CallableStatement stmt = conn.prepareCall(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, violationId);
-            stmt.execute();
+            stmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("ViolationDAO.markAsPaid() failed: " + e.getMessage());
             e.printStackTrace();

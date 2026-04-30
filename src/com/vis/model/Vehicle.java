@@ -10,6 +10,8 @@ public class Vehicle {
 
     //  GETTERS
     public int  getVehicleID(){return vehicleID;}
+    public int getVehicleId() { return vehicleID; } // Alias for consistency
+
     public String getRegistrationNumber(){return registrationNumber;}
     public String getMake() {
         return make;

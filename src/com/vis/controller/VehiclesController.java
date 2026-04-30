@@ -14,7 +14,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.geometry.Pos;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -48,19 +50,31 @@ public class VehiclesController implements Initializable {
 
         if (colActions != null) {
             colActions.setCellFactory(col -> new TableCell<Vehicle, Void>() {
-                private final Button btn = new Button("Details");
+                private final Button btnDetails = new Button("Details");
+                private final Button btnLink = new Button("Link Owner");
+                private final HBox container = new HBox(8, btnDetails, btnLink);
+
                 {
-                    btn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; " +
+                    btnDetails.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; " +
                             "-fx-cursor: hand; -fx-background-radius: 4; -fx-font-size: 11;");
-                    btn.setOnAction(e -> {
+                    btnDetails.setOnAction(e -> {
                         Vehicle v = getTableView().getItems().get(getIndex());
                         showDetails(v);
                     });
+
+                    btnLink.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; " +
+                            "-fx-cursor: hand; -fx-background-radius: 4; -fx-font-size: 11;");
+                    btnLink.setOnAction(e -> {
+                        Vehicle v = getTableView().getItems().get(getIndex());
+                        handleLinkCustomer(v);
+                    });
+                    
+                    container.setAlignment(Pos.CENTER);
                 }
                 @Override
                 protected void updateItem(Void item, boolean empty) {
                     super.updateItem(item, empty);
-                    setGraphic(empty ? null : btn);
+                    setGraphic(empty ? null : container);
                 }
             });
         }
@@ -189,6 +203,51 @@ public class VehiclesController implements Initializable {
                     }
                 } catch (Exception e) {
                     new Alert(Alert.AlertType.WARNING, "Please fill all fields correctly!").showAndWait();
+                }
+            }
+        });
+    }
+
+    private void handleLinkCustomer(Vehicle v) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        UIUtils.styleDialog(dialog, "Link Customer", "Assign a customer to vehicle " + v.getRegistrationNumber(), "fas-link");
+
+        ComboBox<String> ownerBox = new ComboBox<>();
+        new com.vis.db.CustomerDAO().getAllCustomers()
+                .forEach(c -> ownerBox.getItems().add(c.getCustomerID() + " — " + c.getName() + " " + c.getSurname()));
+        ownerBox.setPromptText("Select New Owner");
+        
+        // Pre-select current owner if possible
+        int currentOwnerID = v.getOwnerID();
+        if (currentOwnerID > 0) {
+            for (String item : ownerBox.getItems()) {
+                if (item.startsWith(currentOwnerID + " — ")) {
+                    ownerBox.setValue(item);
+                    break;
+                }
+            }
+        }
+
+        VBox form = UIUtils.createFormLayout();
+        form.getChildren().add(UIUtils.createFieldGroup("New Owner", ownerBox, "fas-user-tie"));
+
+        dialog.getDialogPane().setContent(form);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                String selected = ownerBox.getValue();
+                if (selected == null) {
+                    new Alert(Alert.AlertType.WARNING, "Please select a customer!").showAndWait();
+                    return;
+                }
+
+                int newOwnerID = Integer.parseInt(selected.split(" — ")[0]);
+                if (new VehicleDAO().updateVehicleOwner(v.getVehicleID(), newOwnerID)) {
+                    loadVehicles();
+                    new Alert(Alert.AlertType.INFORMATION, "Customer linked successfully!").showAndWait();
+                } else {
+                    new Alert(Alert.AlertType.ERROR, "Failed to link customer.").showAndWait();
                 }
             }
         });

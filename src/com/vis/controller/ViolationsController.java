@@ -25,6 +25,7 @@ public class ViolationsController implements Initializable {
     @FXML private TableColumn<Violation, String>   colViolationDate;
     @FXML private TableColumn<Violation, String>   colViolationType;
     @FXML private TableColumn<Violation, Double>   colFineAmount;
+    @FXML private TableColumn<Violation, Double>   colAmountPaid;
     @FXML private TableColumn<Violation, String>   colStatus;
     @FXML private TextField searchField;
     @FXML private Label lblTotalViolations;
@@ -41,12 +42,14 @@ public class ViolationsController implements Initializable {
         colViolationDate.setCellValueFactory(new PropertyValueFactory<>("violationDate"));
         colViolationType.setCellValueFactory(new PropertyValueFactory<>("violationType"));
         colFineAmount   .setCellValueFactory(new PropertyValueFactory<>("fineAmount"));
+        colAmountPaid   .setCellValueFactory(new PropertyValueFactory<>("amountPaid"));
         colStatus       .setCellValueFactory(new PropertyValueFactory<>("status"));
 
         filteredData = new FilteredList<>(violationData, p -> true);
         violationsTable.setItems(filteredData);
 
         loadViolations();
+        setupStatusCellFactory();
         if (searchField != null) {
             searchField.textProperty().addListener((obs, old, nw) -> {
                 filteredData.setPredicate(v -> {
@@ -60,6 +63,31 @@ public class ViolationsController implements Initializable {
         }
     }
 
+    private void setupStatusCellFactory() {
+        colStatus.setCellFactory(column -> new TableCell<Violation, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    Label badge = new Label(item.toUpperCase());
+                    String style = UIUtils.BADGE_PENDING_STYLE; // Default red for UNPAID
+                    
+                    if ("PAID".equalsIgnoreCase(item)) {
+                        style = UIUtils.BADGE_SUCCESS_STYLE;
+                    } else if ("PARTIALLY PAID".equalsIgnoreCase(item)) {
+                        style = UIUtils.BADGE_INFO_STYLE;
+                    }
+                    
+                    badge.setStyle(style);
+                    setGraphic(badge);
+                }
+            }
+        });
+    }
+
     private void loadViolations() {
         try {
             ViolationDAO dao = new ViolationDAO();
@@ -70,7 +98,9 @@ public class ViolationsController implements Initializable {
             }
             if (lblPendingViolations != null) {
                 long pending = violationData.stream()
-                        .filter(v -> "Pending".equalsIgnoreCase(v.getStatus()) || "Unpaid".equalsIgnoreCase(v.getStatus()))
+                        .filter(v -> "Pending".equalsIgnoreCase(v.getStatus()) 
+                                || "Unpaid".equalsIgnoreCase(v.getStatus())
+                                || "Partially Paid".equalsIgnoreCase(v.getStatus()))
                         .count();
                 lblPendingViolations.setText(String.valueOf(pending));
             }
@@ -91,19 +121,51 @@ public class ViolationsController implements Initializable {
     }
 
     @FXML
-    public void handleMarkPaid(ActionEvent event) {
+    public void handleRecordPayment(ActionEvent event) {
         Violation selected = violationsTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            new Alert(Alert.AlertType.WARNING, "Please select a violation first!").showAndWait();
+            UIUtils.showAlert(Alert.AlertType.WARNING, "Selection Required", null, "Please select a violation first!");
             return;
         }
         if ("PAID".equalsIgnoreCase(selected.getStatus())) {
-            new Alert(Alert.AlertType.INFORMATION, "This violation is already paid!").showAndWait();
+            UIUtils.showAlert(Alert.AlertType.INFORMATION, "Already Paid", null, "This violation is already fully paid!");
             return;
         }
-        new ViolationDAO().markAsPaid(selected.getViolationId());
-        loadViolations();
-        new Alert(Alert.AlertType.INFORMATION, "Violation marked as paid!").showAndWait();
+
+        double remaining = selected.getRemainingAmount();
+
+        TextInputDialog dialog = new TextInputDialog(String.valueOf(remaining));
+        UIUtils.styleDialog(dialog, "Record Payment", "Enter payment amount for Violation #" + selected.getViolationId(), "fas-money-bill-wave");
+        dialog.setContentText("Amount to pay (Remaining: M" + String.format("%.2f", remaining) + "):");
+
+        dialog.showAndWait().ifPresent(amountStr -> {
+            try {
+                double amount = Double.parseDouble(amountStr);
+                if (amount <= 0) {
+                    UIUtils.showAlert(Alert.AlertType.ERROR, "Invalid Amount", null, "Payment amount must be greater than zero.");
+                    return;
+                }
+                if (amount > remaining) {
+                    UIUtils.showAlert(Alert.AlertType.ERROR, "Overpayment", null, "Payment amount cannot exceed the remaining fine of M" + remaining);
+                    return;
+                }
+
+                if (new ViolationDAO().recordPayment(selected.getViolationId(), amount)) {
+                    loadViolations();
+                    UIUtils.showAlert(Alert.AlertType.INFORMATION, "Success", null, "Payment recorded successfully!");
+                } else {
+                    UIUtils.showAlert(Alert.AlertType.ERROR, "Error", null, "Failed to record payment.");
+                }
+            } catch (NumberFormatException e) {
+                UIUtils.showAlert(Alert.AlertType.ERROR, "Invalid Input", null, "Please enter a valid numeric amount.");
+            }
+        });
+    }
+
+    @FXML
+    public void handleMarkPaid(ActionEvent event) {
+        // Kept for backward compatibility if needed, but redirected to handleRecordPayment
+        handleRecordPayment(event);
     }
 
     @FXML

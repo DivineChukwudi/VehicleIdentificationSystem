@@ -172,28 +172,23 @@
         <Label text="Select Your Role" textFill="#8a9ab5"
                style="-fx-font-size: 11; -fx-font-weight: bold; -fx-padding: 0 0 7 0;"/>
         <HBox spacing="5" maxWidth="400">
-            <ToggleButton fx:id="btnRoleAdmin" text="Admin" toggleGroup="$roleGroup"
-                          prefWidth="75" prefHeight="34"
-                          style="-fx-background-color: #12192b; -fx-text-fill: #8a9ab5; -fx-background-radius: 6; -fx-border-color: #2a3a5a; -fx-border-radius: 6; -fx-border-width: 1; -fx-cursor: hand;">
-                <graphic><FontIcon iconLiteral="fas-user-shield" iconSize="12" iconColor="#8a9ab5"/></graphic>
-            </ToggleButton>
             <ToggleButton fx:id="btnRoleOfficer" text="Officer" toggleGroup="$roleGroup"
-                          prefWidth="75" prefHeight="34"
+                          prefWidth="95" prefHeight="34"
                           style="-fx-background-color: #12192b; -fx-text-fill: #8a9ab5; -fx-background-radius: 6; -fx-border-color: #2a3a5a; -fx-border-radius: 6; -fx-border-width: 1; -fx-cursor: hand;">
                 <graphic><FontIcon iconLiteral="fas-shield-alt" iconSize="12" iconColor="#8a9ab5"/></graphic>
             </ToggleButton>
             <ToggleButton fx:id="btnRoleCustomer" text="Customer" toggleGroup="$roleGroup"
-                          prefWidth="75" prefHeight="34"
+                          prefWidth="95" prefHeight="34"
                           style="-fx-background-color: #12192b; -fx-text-fill: #8a9ab5; -fx-background-radius: 6; -fx-border-color: #2a3a5a; -fx-border-radius: 6; -fx-border-width: 1; -fx-cursor: hand;">
                 <graphic><FontIcon iconLiteral="fas-user" iconSize="12" iconColor="#8a9ab5"/></graphic>
             </ToggleButton>
             <ToggleButton fx:id="btnRoleMechanic" text="Mechanic" toggleGroup="$roleGroup"
-                          prefWidth="75" prefHeight="34"
+                          prefWidth="95" prefHeight="34"
                           style="-fx-background-color: #12192b; -fx-text-fill: #8a9ab5; -fx-background-radius: 6; -fx-border-color: #2a3a5a; -fx-border-radius: 6; -fx-border-width: 1; -fx-cursor: hand;">
                 <graphic><FontIcon iconLiteral="fas-wrench" iconSize="12" iconColor="#8a9ab5"/></graphic>
             </ToggleButton>
             <ToggleButton fx:id="btnRoleInsurance" text="Insure" toggleGroup="$roleGroup"
-                          prefWidth="75" prefHeight="34"
+                          prefWidth="95" prefHeight="34"
                           style="-fx-background-color: #12192b; -fx-text-fill: #8a9ab5; -fx-background-radius: 6; -fx-border-color: #2a3a5a; -fx-border-radius: 6; -fx-border-width: 1; -fx-cursor: hand;">
                 <graphic><FontIcon iconLiteral="fas-file-contract" iconSize="12" iconColor="#8a9ab5"/></graphic>
             </ToggleButton>

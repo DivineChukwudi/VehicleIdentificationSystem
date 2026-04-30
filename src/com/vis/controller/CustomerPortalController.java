@@ -44,7 +44,7 @@ public class CustomerPortalController implements Initializable {
             lblCustomerName.setText("Welcome, " + user.getUsername());
             customerId = new UserDAO().getCustomerId(user.getUserID());
             checkViolations();
-            handleMyVehicles(null);
+            handleVehicles(null);
             setActive(navMyVehicles);
         }
     }
@@ -70,7 +70,7 @@ public class CustomerPortalController implements Initializable {
 
     public int getCustomerId() { return customerId; }
 
-    @FXML private void handleMyVehicles(ActionEvent e) {
+    @FXML private void handleVehicles(ActionEvent e) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/vis/fxml/CustomerVehiclesView.fxml"));
             Parent view = loader.load();
@@ -81,7 +81,7 @@ public class CustomerPortalController implements Initializable {
         } catch (IOException ex) { ex.printStackTrace(); }
     }
 
-    @FXML private void handleMyViolations(ActionEvent e) {
+    @FXML private void handleViolations(ActionEvent e) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/vis/fxml/CustomerViolationsView.fxml"));
             Parent view = loader.load();
@@ -92,7 +92,7 @@ public class CustomerPortalController implements Initializable {
         } catch (IOException ex) { ex.printStackTrace(); }
     }
 
-    @FXML private void handleMyServiceRecords(ActionEvent e) {
+    @FXML private void handleServiceRecords(ActionEvent e) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/vis/fxml/CustomerServiceView.fxml"));
             Parent view = loader.load();
@@ -103,7 +103,7 @@ public class CustomerPortalController implements Initializable {
         } catch (IOException ex) { ex.printStackTrace(); }
     }
 
-    @FXML private void handleMyProfile(ActionEvent e) {
+    @FXML private void handleProfile(ActionEvent e) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/vis/fxml/CustomerProfileView.fxml"));
             Parent view = loader.load();

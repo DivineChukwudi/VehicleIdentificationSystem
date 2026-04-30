@@ -34,6 +34,7 @@
                     <MenuItem text="Violations" onAction="#handleViolations"/>
                     <MenuItem text="Service Records" onAction="#handleServiceRecords"/>
                     <SeparatorMenuItem/>
+                    <MenuItem text="User Management" onAction="#handleUsers"/>
                     <MenuItem text="Browse Registry" onAction="#handlePagination"/>
                 </Menu>
                 <Menu text="Help">
@@ -121,6 +122,16 @@
                     <HBox alignment="CENTER_LEFT" spacing="10">
                         <FontIcon iconLiteral="fas-exclamation-circle" iconSize="15" iconColor="#bdc3c7"/>
                         <Label text="Violations" textFill="#bdc3c7"/>
+                    </HBox>
+                </graphic>
+            </Button>
+
+            <Button fx:id="btnUsers" maxWidth="1.7976931348623157E308" onAction="#handleUsers"
+                    style="-fx-background-color: transparent; -fx-text-fill: #bdc3c7; -fx-alignment: CENTER_LEFT; -fx-padding: 8 14; -fx-background-radius: 6; -fx-cursor: hand;">
+                <graphic>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <FontIcon iconLiteral="fas-user-shield" iconSize="15" iconColor="#bdc3c7"/>
+                        <Label text="User Management" textFill="#bdc3c7"/>
                     </HBox>
                 </graphic>
             </Button>

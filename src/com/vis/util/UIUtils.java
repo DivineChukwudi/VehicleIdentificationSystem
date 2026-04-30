@@ -50,9 +50,11 @@ public class UIUtils {
     
     public static final String BADGE_PENDING_STYLE = "-fx-background-color: #4a1a1a; -fx-text-fill: #e74c3c; -fx-padding: 2 8; -fx-background-radius: 10; -fx-font-size: 11;";
     public static final String BADGE_SUCCESS_STYLE = "-fx-background-color: #1a4a2a; -fx-text-fill: #27ae60; -fx-padding: 2 8; -fx-background-radius: 10; -fx-font-size: 11;";
+    public static final String BADGE_INFO_STYLE = "-fx-background-color: #1a3a5a; -fx-text-fill: #3498db; -fx-padding: 2 8; -fx-background-radius: 10; -fx-font-size: 11;";
     
     public static final String ICON_CIRCLE_PENDING = "-fx-background-color: #4a1a1a; -fx-background-radius: 50;";
     public static final String ICON_CIRCLE_SUCCESS = "-fx-background-color: #1a4a2a; -fx-background-radius: 50;";
+    public static final String ICON_CIRCLE_INFO = "-fx-background-color: #1a3a5a; -fx-background-radius: 50;";
     public static final String ICON_CIRCLE_BLUE = "-fx-background-color: #1e3a5f; -fx-background-radius: 50;";
 
     // Card Styles

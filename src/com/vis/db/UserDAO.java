@@ -21,11 +21,18 @@ public class UserDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
+                    // Check if the column is_active exists, if not default to true
+                    boolean isActive = true;
+                    try {
+                        isActive = rs.getBoolean("is_active");
+                    } catch (SQLException ignored) {}
+
                     return new User(
                             rs.getInt("userid"),
                             rs.getString("username"),
                             rs.getString("password"),
-                            rs.getString("role")
+                            rs.getString("role"),
+                            isActive
                     );
                 }
             }
@@ -123,6 +130,75 @@ public class UserDAO {
 
         } catch (SQLException e) {
             System.err.println("UserDAO.registerUser() failed: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT * FROM users ORDER BY userid DESC";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                boolean isActive = true;
+                try { isActive = rs.getBoolean("is_active"); } catch (SQLException ignored) {}
+                
+                users.add(new User(
+                        rs.getInt("userid"),
+                        rs.getString("username"),
+                        "********", // Hide password
+                        rs.getString("role"),
+                        isActive
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    public boolean toggleUserStatus(int userId, boolean active) {
+        String sql = "UPDATE users SET is_active = ? WHERE userid = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setBoolean(1, active);
+            stmt.setInt(2, userId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean createUserForCustomer(int customerId, String username, String password) {
+        String hashedPassword = PasswordUtil.hashPassword(password);
+        String sql = "INSERT INTO users (username, password, role, customer_id) VALUES (?, ?, 'customer', ?)";
+        
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, username);
+            stmt.setString(2, hashedPassword);
+            stmt.setInt(3, customerId);
+            
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("UserDAO.createUserForCustomer() failed: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean hasUserAccount(int customerId) {
+        String sql = "SELECT 1 FROM users WHERE customer_id = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, customerId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
             return false;
         }
     }

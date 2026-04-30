@@ -20,6 +20,7 @@ public class CustomerViolationsController implements Initializable {
     @FXML private TableColumn<Violation, String> colViolationDate;
     @FXML private TableColumn<Violation, String> colViolationType;
     @FXML private TableColumn<Violation, Double> colFineAmount;
+    @FXML private TableColumn<Violation, Double> colAmountPaid;
     @FXML private TableColumn<Violation, String> colStatus;
     @FXML private Label lblSummary;
 
@@ -32,7 +33,35 @@ public class CustomerViolationsController implements Initializable {
         colViolationDate.setCellValueFactory(new PropertyValueFactory<>("violationDate"));
         colViolationType.setCellValueFactory(new PropertyValueFactory<>("violationType"));
         colFineAmount.setCellValueFactory(new PropertyValueFactory<>("fineAmount"));
+        colAmountPaid.setCellValueFactory(new PropertyValueFactory<>("amountPaid"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        
+        setupStatusCellFactory();
+    }
+
+    private void setupStatusCellFactory() {
+        colStatus.setCellFactory(column -> new TableCell<Violation, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    Label badge = new Label(item.toUpperCase());
+                    String style = com.vis.util.UIUtils.BADGE_PENDING_STYLE; 
+                    
+                    if ("PAID".equalsIgnoreCase(item)) {
+                        style = com.vis.util.UIUtils.BADGE_SUCCESS_STYLE;
+                    } else if ("PARTIALLY PAID".equalsIgnoreCase(item)) {
+                        style = com.vis.util.UIUtils.BADGE_INFO_STYLE;
+                    }
+                    
+                    badge.setStyle(style);
+                    setGraphic(badge);
+                }
+            }
+        });
     }
 
     public void setCustomerId(int customerId) {
@@ -44,9 +73,11 @@ public class CustomerViolationsController implements Initializable {
         if (customerId == -1) return;
         List<Violation> all = new ViolationDAO().getViolationsByCustomer(customerId);
         violationsTable.setItems(FXCollections.observableArrayList(all));
-        long unpaid = all.stream().filter(v -> "UNPAID".equalsIgnoreCase(v.getStatus())).count();
+        long pending = all.stream()
+                .filter(v -> !"PAID".equalsIgnoreCase(v.getStatus()))
+                .count();
         if (lblSummary != null) {
-            lblSummary.setText("Total: " + all.size() + "   Unpaid: " + unpaid);
+            lblSummary.setText("Total: " + all.size() + "   Unpaid/Partial: " + pending);
         }
     }
 }

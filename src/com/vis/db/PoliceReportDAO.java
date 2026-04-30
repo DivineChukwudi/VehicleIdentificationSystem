@@ -9,7 +9,7 @@ import java.util.List;
 public class PoliceReportDAO {
 
     public boolean addReport(int vehicleId, String reportDate, String reportType, String description, String officerName) {
-        String sql = "INSERT INTO PoliceReport(vehicle_id, report_date, report_type, description, officer_name) VALUES(?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO PoliceReport(vehicle_id, report_date, report_type, description, officer_name) VALUES(?, CAST(? AS DATE), ?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, vehicleId);

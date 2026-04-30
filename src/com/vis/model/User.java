@@ -5,9 +5,7 @@ public class User {
     private String username;
     private String password;
     private String role;
-
-
-
+    private boolean isActive;
 
     //GETTERS
     public int getUserID(){
@@ -26,6 +24,9 @@ public class User {
         return role;
     }
 
+    public boolean isActive() {
+        return isActive;
+    }
 
     //SETTERS
     public void setUserID(int userID){
@@ -44,19 +45,28 @@ public class User {
         this.role = role;
     }
 
+    public void setActive(boolean active) {
+        isActive = active;
+    }
 
     //CONSTRUCTOR
 
     public User(int userID, String username, String password, String role) {
+        this(userID, username, password, role, true);
+    }
+
+    public User(int userID, String username, String password, String role, boolean isActive) {
         this.userID = userID;
         this.username = username;
         this.password = password;
         this.role = role;
+        this.isActive = isActive;
     }
 
     public String getUserDetails() {
       return "User ID: " + userID + "\n" +
               "Username: " + username + "\n" +
-              "Role: " + role;
+              "Role: " + role + "\n" +
+              "Status: " + (isActive ? "Active" : "Disabled");
     }
 }

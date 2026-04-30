@@ -30,7 +30,8 @@
             <TableColumn fx:id="colVehicleID" prefWidth="100.0" text="Vehicle ID"/>
             <TableColumn fx:id="colViolationDate" prefWidth="130.0" text="Date"/>
             <TableColumn fx:id="colViolationType" prefWidth="160.0" text="Type"/>
-            <TableColumn fx:id="colFineAmount" prefWidth="120.0" text="Fine Amount"/>
+            <TableColumn fx:id="colFineAmount" prefWidth="100.0" text="Fine (M)"/>
+            <TableColumn fx:id="colAmountPaid" prefWidth="100.0" text="Paid (M)"/>
             <TableColumn fx:id="colStatus" prefWidth="100.0" text="Status"/>
         </columns>
         <columnResizePolicy>

@@ -35,7 +35,8 @@ public class PaginationController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        allVehicles = new VehicleDAO().getVehiclesFromView();
+        // Fetch real vehicle data from the database
+        allVehicles = new VehicleDAO().getAllVehicles();
 
         if (allVehicles.isEmpty()) {
             itemContainer.getChildren().add(new Label("No vehicles found in database."));
@@ -66,7 +67,7 @@ public class PaginationController implements Initializable {
         int end = Math.min(start + ITEMS_PER_PAGE, allVehicles.size());
 
         for (int i = start; i < end; i++) {
-            itemContainer.getChildren().add(buildCard(allVehicles.get(i), i + 1));
+            itemContainer.getChildren().add(buildVehicleCard(allVehicles.get(i), i + 1));
         }
 
         if (lblPageInfo != null) {
@@ -75,7 +76,7 @@ public class PaginationController implements Initializable {
         }
     }
 
-    private HBox buildCard(Vehicle v, int number) {
+    private HBox buildVehicleCard(Vehicle v, int number) {
         HBox card = new HBox(14);
         card.setAlignment(Pos.CENTER_LEFT);
         card.setPadding(new Insets(14, 18, 14, 18));
@@ -92,11 +93,11 @@ public class PaginationController implements Initializable {
         icon.setIconColor(Color.web("#3498db"));
 
         VBox textBox = new VBox(3);
-        Label regLine = new Label(v.getRegistrationNumber() + "   —   " + v.getMake() + " " + v.getModel());
-        regLine.setStyle(UIUtils.ACTIVITY_TITLE_STYLE + "-fx-font-weight: bold;");
-        Label detailLine = new Label("Year: " + v.getYear() + "   |   Owner ID: " + v.getOwnerID());
+        Label mainLine = new Label(v.getRegistrationNumber() + " — " + v.getMake() + " " + v.getModel());
+        mainLine.setStyle(UIUtils.ACTIVITY_TITLE_STYLE + "-fx-font-weight: bold;");
+        Label detailLine = new Label("Year: " + v.getYear() + " | Owner ID: " + v.getOwnerID());
         detailLine.setStyle(UIUtils.ACTIVITY_SUBTITLE_STYLE);
-        textBox.getChildren().addAll(regLine, detailLine);
+        textBox.getChildren().addAll(mainLine, detailLine);
 
         HBox spacer = new HBox();
         HBox.setHgrow(spacer, Priority.ALWAYS);

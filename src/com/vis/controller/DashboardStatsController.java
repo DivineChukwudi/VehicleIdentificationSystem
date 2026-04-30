@@ -1,7 +1,7 @@
 package com.vis.controller;
 
 import com.vis.db.*;
-import com.vis.model.Violation;
+import com.vis.model.*;
 import com.vis.util.UIUtils;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -74,17 +74,25 @@ public class DashboardStatsController implements Initializable {
         }
     }
 
+    @FXML
+    public void handleRefresh() {
+        lblLastUpdated.setText("Refreshing data...");
+        loadStatsAsync();
+    }
+
     private void loadStatsAsync() {
         CompletableFuture.runAsync(() -> {
             try {
-                // ── Fetch counts ────────────────────────────────────────────
-                int vehicleCount = VehicleDAO.getAllVehicles().size();
-                int customerCount  = new CustomerDAO().getAllCustomers().size();
-                int reportCount    = new PoliceReportDAO().getAllReports().size();
-                int serviceCount   = new ServiceDAO().getAllServices().size();
-
                 List<com.vis.model.Violation> violations = new ViolationDAO().getAllViolations();
+                List<com.vis.model.PoliceReport> reports = new PoliceReportDAO().getAllReports();
+                List<com.vis.model.Service> services = new ServiceDAO().getAllServices();
+                List<com.vis.model.Customer> customers = new CustomerDAO().getAllCustomers();
+
                 int violationCount = violations.size();
+                int reportCount    = reports.size();
+                int serviceCount   = services.size();
+                int vehicleCount   = VehicleDAO.getAllVehicles().size();
+                int customerCount  = customers.size();
 
                 long pending = violations.stream()
                         .filter(v -> "Pending".equalsIgnoreCase(v.getStatus())
@@ -98,8 +106,7 @@ public class DashboardStatsController implements Initializable {
                         .mapToDouble(Violation::getFineAmount)
                         .sum();
 
-                double totalServiceRevenue = new ServiceDAO().getAllServices()
-                        .stream().mapToDouble(s -> s.getCost()).sum();
+                double totalServiceRevenue = services.stream().mapToDouble(s -> s.getCost()).sum();
 
                 String updatedAt = "Last updated: " +
                         LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm"));
@@ -119,7 +126,7 @@ public class DashboardStatsController implements Initializable {
                     lblTotalServiceCost.setText(String.format("Revenue: M %.2f", totalServiceRevenue));
                     lblLastUpdated.setText(updatedAt);
 
-                    buildActivityFeed(violations, pending);
+                    buildUnifiedActivityFeed(violations, reports, services, customers);
                 });
 
             } catch (Exception e) {
@@ -131,16 +138,58 @@ public class DashboardStatsController implements Initializable {
         });
     }
 
-    private void buildActivityFeed(List<Violation> violations, long pending) {
+    private void buildUnifiedActivityFeed(List<Violation> violations, List<PoliceReport> reports, 
+                                          List<Service> services, List<Customer> customers) {
         activityList.getChildren().clear();
 
-        // Recent violations as activity entries (up to 8)
-        int shown = 0;
-        for (Violation v : violations) {
-            if (shown >= 8) break;
+        // Combine all into a single list of Activity items
+        class ActivityItem {
+            String title, subtitle, status, type;
+            LocalDateTime date;
+            ActivityItem(String title, String subtitle, String status, String type, LocalDateTime date) {
+                this.title = title; this.subtitle = subtitle; this.status = status; this.type = type; this.date = date;
+            }
+        }
+        java.util.List<ActivityItem> feed = new java.util.ArrayList<>();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-            boolean isPending = "Pending".equalsIgnoreCase(v.getStatus())
-                    || "Unpaid".equalsIgnoreCase(v.getStatus());
+        // Violations
+        for (Violation v : violations) {
+            LocalDateTime d = parseDate(v.getViolationDate());
+            feed.add(new ActivityItem("Violation #" + v.getViolationId() + " — " + v.getViolationType(),
+                    "Vehicle " + v.getVehicleId() + "  •  M " + String.format("%.2f", v.getFineAmount()),
+                    v.getStatus(), "violation", d));
+        }
+        // Reports
+        for (PoliceReport r : reports) {
+            LocalDateTime d = parseDate(r.getReportDate());
+            feed.add(new ActivityItem("Police Report #" + r.getReportId() + " — " + r.getReportType(),
+                    "Vehicle " + r.getVehicleId() + "  •  Officer: " + r.getOfficerName(),
+                    "Reported", "report", d));
+        }
+        // Services
+        for (Service s : services) {
+            LocalDateTime d = parseDate(s.getServiceDate());
+            feed.add(new ActivityItem("Service #" + s.getServiceId() + " — " + s.getServiceType(),
+                    "Vehicle " + s.getVehicleId() + "  •  Cost: M " + String.format("%.2f", s.getCost()),
+                    "Completed", "service", d));
+        }
+        // New Customers
+        for (Customer c : customers) {
+            // Customers don't have a date in the model, but we can treat them as activity
+            feed.add(new ActivityItem("New Customer: " + c.getName() + " " + c.getSurname(),
+                    "Email: " + c.getEmail(), "Registered", "customer", LocalDateTime.now().minusDays(1)));
+        }
+
+        // Sort by date desc
+        feed.sort((a, b) -> b.date.compareTo(a.date));
+
+        int shown = 0;
+        for (ActivityItem item : feed) {
+            if (shown >= 10) break;
+
+            boolean isWarning = item.status.equalsIgnoreCase("Unpaid") || item.status.equalsIgnoreCase("Pending");
+            boolean isInfo = item.type.equals("customer") || item.type.equals("report");
 
             HBox row = new HBox();
             row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -152,29 +201,42 @@ public class DashboardStatsController implements Initializable {
             iconBox.setAlignment(javafx.geometry.Pos.CENTER);
             iconBox.setPrefWidth(32);
             iconBox.setPrefHeight(32);
-            iconBox.setStyle(isPending ? UIUtils.ICON_CIRCLE_PENDING : UIUtils.ICON_CIRCLE_SUCCESS);
             
-            FontIcon icon = new FontIcon(isPending ? "fas-exclamation" : "fas-check");
+            String iconLiteral = "fas-check";
+            String color = "#27ae60";
+            String circle = UIUtils.ICON_CIRCLE_SUCCESS;
+
+            if (isWarning) {
+                iconLiteral = "fas-exclamation";
+                color = "#e74c3c";
+                circle = UIUtils.ICON_CIRCLE_PENDING;
+            } else if (isInfo) {
+                iconLiteral = item.type.equals("customer") ? "fas-user" : "fas-file-alt";
+                color = "#3498db";
+                circle = UIUtils.ICON_CIRCLE_INFO;
+            }
+
+            iconBox.setStyle(circle);
+            FontIcon icon = new FontIcon(iconLiteral);
             icon.setIconSize(12);
-            icon.setIconColor(javafx.scene.paint.Color.web(isPending ? "#e74c3c" : "#27ae60"));
+            icon.setIconColor(javafx.scene.paint.Color.web(color));
             iconBox.getChildren().add(icon);
 
             // Text
             VBox textBox = new VBox(2);
-            Label title = new Label("Violation #" + v.getViolationId() +
-                    " — " + v.getViolationType());
+            Label title = new Label(item.title);
             title.setStyle(UIUtils.ACTIVITY_TITLE_STYLE);
 
-            Label sub = new Label("Vehicle ID " + v.getVehicleId() +
-                    "  •  " + v.getViolationDate() +
-                    "  •  M " + String.format("%.2f", v.getFineAmount()));
+            Label sub = new Label(item.subtitle + "  •  " + item.date.format(DateTimeFormatter.ofPattern("dd MMM")));
             sub.setStyle(UIUtils.ACTIVITY_SUBTITLE_STYLE);
 
             textBox.getChildren().addAll(title, sub);
 
             // Status badge
-            Label badge = new Label(v.getStatus());
-            badge.setStyle(isPending ? UIUtils.BADGE_PENDING_STYLE : UIUtils.BADGE_SUCCESS_STYLE);
+            Label badge = new Label(item.status);
+            if (isWarning) badge.setStyle(UIUtils.BADGE_PENDING_STYLE);
+            else if (isInfo) badge.setStyle(UIUtils.BADGE_INFO_STYLE);
+            else badge.setStyle(UIUtils.BADGE_SUCCESS_STYLE);
 
             HBox spacer = new HBox();
             HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
@@ -195,5 +257,14 @@ public class DashboardStatsController implements Initializable {
         }
 
         lblActivityCount.setText(shown + " recent entries");
+    }
+
+    private LocalDateTime parseDate(String dateStr) {
+        try {
+            if (dateStr == null || dateStr.isEmpty()) return LocalDateTime.now();
+            return java.time.LocalDate.parse(dateStr).atStartOfDay();
+        } catch (Exception e) {
+            return LocalDateTime.now();
+        }
     }
 }

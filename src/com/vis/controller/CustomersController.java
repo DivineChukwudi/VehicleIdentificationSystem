@@ -83,6 +83,60 @@ public class CustomersController implements Initializable {
     }
 
     @FXML
+    public void handleAssignLogin(ActionEvent event) {
+        Customer selected = customersTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            new Alert(Alert.AlertType.WARNING, "Please select a customer first!").showAndWait();
+            return;
+        }
+
+        com.vis.db.UserDAO userDAO = new com.vis.db.UserDAO();
+        if (userDAO.hasUserAccount(selected.getCustomerID())) {
+            new Alert(Alert.AlertType.INFORMATION, "This customer already has a login account.").showAndWait();
+            return;
+        }
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        UIUtils.styleDialog(dialog, "Assign Login", "Create credentials for " + selected.getName(), "fas-key");
+
+        TextField userField = new TextField(); 
+        userField.setPromptText("Username");
+        // Pre-fill with a suggestion
+        userField.setText(selected.getName().toLowerCase() + selected.getCustomerID());
+
+        PasswordField passField = new PasswordField();
+        passField.setPromptText("Password (min 6 chars)");
+
+        VBox form = UIUtils.createFormLayout();
+        form.getChildren().addAll(
+            new Label("Assign login credentials for " + selected.getName() + " " + selected.getSurname()),
+            UIUtils.createFieldGroup("Username", userField, "fas-user"),
+            UIUtils.createFieldGroup("Password", passField, "fas-lock")
+        );
+
+        dialog.getDialogPane().setContent(form);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                String username = userField.getText().trim();
+                String password = passField.getText();
+
+                if (username.isEmpty() || password.length() < 6) {
+                    new Alert(Alert.AlertType.WARNING, "Username required and password must be at least 6 characters!").showAndWait();
+                    return;
+                }
+
+                if (userDAO.createUserForCustomer(selected.getCustomerID(), username, password)) {
+                    new Alert(Alert.AlertType.INFORMATION, "Login credentials assigned successfully!").showAndWait();
+                } else {
+                    new Alert(Alert.AlertType.ERROR, "Failed to create user account. Username might be taken.").showAndWait();
+                }
+            }
+        });
+    }
+
+    @FXML
     public void handleAddCustomer(ActionEvent event) {
         Dialog<ButtonType> dialog = new Dialog<>();
         UIUtils.styleDialog(dialog, "Add Customer", "Register a new vehicle owner", "fas-user-plus");

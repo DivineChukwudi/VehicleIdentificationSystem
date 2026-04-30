@@ -3,8 +3,10 @@ package com.vis.controller;
 import com.vis.db.UserDAO;
 import com.vis.model.User;
 import com.vis.util.UIUtils;
+import javafx.application.Platform;
 import javafx.animation.Animation;
 import javafx.animation.FadeTransition;
+import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -23,6 +25,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.concurrent.CompletableFuture;
 
 public class LoginController implements Initializable {
 
@@ -38,7 +41,6 @@ public class LoginController implements Initializable {
     @FXML private HBox          errorBox;
     @FXML private Label         lblError;
     @FXML private ToggleGroup   roleGroup;
-    @FXML private ToggleButton  btnRoleAdmin;
     @FXML private ToggleButton  btnRoleOfficer;
     @FXML private ToggleButton  btnRoleCustomer;
     @FXML private ToggleButton  btnRoleMechanic;
@@ -53,12 +55,11 @@ public class LoginController implements Initializable {
     @FXML private HBox          forgotBox;
 
     private boolean isRegisterMode = false;
+    private final PauseTransition errorTimeout = new PauseTransition(Duration.seconds(3));
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        btnRoleAdmin.setSelected(true);
-        styleSelectedRole(btnRoleAdmin);
-
+        // No default selection for login
         roleGroup.selectedToggleProperty().addListener((obs, old, now) -> {
             for (Toggle t : roleGroup.getToggles())
                 ((ToggleButton) t).setStyle(com.vis.util.UIUtils.TOGGLE_BUTTON_STYLE);
@@ -81,13 +82,13 @@ public class LoginController implements Initializable {
 
         usernameField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
-                try { handlePrimaryAction(); } catch (Exception ex) { ex.printStackTrace(); }
+                handlePrimaryAction();
             }
         });
 
         passwordField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
-                try { handlePrimaryAction(); } catch (Exception ex) { ex.printStackTrace(); }
+                handlePrimaryAction();
             }
         });
 
@@ -112,7 +113,6 @@ public class LoginController implements Initializable {
     private void setupValidation() {
         UIUtils.applyLetterValidation(firstNameField);
         UIUtils.applyLetterValidation(lastNameField);
-        UIUtils.applyLetterValidation(usernameField);
     }
 
     private void styleSelectedRole(ToggleButton btn) {
@@ -135,6 +135,10 @@ public class LoginController implements Initializable {
             confirmPasswordBox.setVisible(true);    confirmPasswordBox.setManaged(true);
             confirmPasswordSpacer.setVisible(true); confirmPasswordSpacer.setManaged(true);
             forgotBox.setVisible(false);            forgotBox.setManaged(false);
+            
+            // Start in customer mode for registration
+            btnRoleCustomer.setSelected(true);
+            styleSelectedRole(btnRoleCustomer);
         } else {
             lblFormTitle.setText("Welcome Back");
             lblFormSubtitle.setText("Sign in to continue");
@@ -150,64 +154,173 @@ public class LoginController implements Initializable {
             lastNameField.clear();
             emailField.clear();
             confirmPasswordField.clear();
+            
+            // Clear selections for login
+            if (roleGroup.getSelectedToggle() != null) {
+                roleGroup.getSelectedToggle().setSelected(false);
+            }
         }
     }
 
     @FXML
-    private void handlePrimaryAction() throws IOException {
-        if (isRegisterMode) handleRegister();
-        else handleLogin();
-    }
+    private void handlePrimaryAction() {
+        if (btnPrimaryAction.isDisable()) return;
+        hideError();
 
-    private void handleLogin() throws IOException {
-        String username     = usernameField.getText().trim();
-        String password     = passwordField.getText();
+        // Capture fields on FX thread
+        String username = usernameField.getText().trim();
+        String password = passwordField.getText();
         String selectedRole = getSelectedRole();
-
-        if (username.isEmpty() || password.isEmpty()) { showError("Please enter your username and password."); return; }
-        if (selectedRole == null) { showError("Please select your role."); return; }
-
-        User user = new UserDAO().loginUser(username, password);
-        if (user == null) { showError("Invalid username or password."); return; }
-
-        if (!user.getRole().equalsIgnoreCase(selectedRole)) {
-            showError("Wrong role selected. Your account is registered as: "
-                    + user.getRole().substring(0, 1).toUpperCase()
-                    + user.getRole().substring(1).toLowerCase());
-            return;
+        
+        // Basic validation before starting background task
+        if (username.isEmpty() || password.isEmpty()) { 
+            showError("Please enter your username and password."); 
+            return; 
         }
 
-        routeUser(user, user.getRole());
+        if (isRegisterMode) {
+            if (selectedRole == null) { 
+                showError("Please select your role."); 
+                return; 
+            }
+            String firstName = firstNameField.getText().trim();
+            String lastName  = lastNameField.getText().trim();
+            String email     = emailField.getText().trim();
+            String confirm   = confirmPasswordField.getText();
+            
+            if (firstName.isEmpty())                     { showError("Please enter your first name.");           return; }
+            if (lastName.isEmpty())                      { showError("Please enter your surname.");               return; }
+            if (email.isEmpty() || !email.contains("@")) { showError("Please enter a valid email.");             return; }
+            if (password.length() < 6)                  { showError("Password must be at least 6 characters."); return; }
+            if (!password.equals(confirm))               { showError("Passwords do not match.");                 return; }
+        }
+
+        // Prepare UI
+        btnPrimaryAction.setDisable(true);
+        String originalLabel = btnLabel.getText();
+        btnLabel.setText(isRegisterMode ? "Registering..." : "Signing In...");
+
+        CompletableFuture.runAsync(() -> {
+            try {
+                if (isRegisterMode) {
+                    performRegister();
+                } else {
+                    performLogin(username, password, selectedRole);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> showError("An unexpected error occurred. Please try again."));
+            } finally {
+                Platform.runLater(() -> {
+                    btnPrimaryAction.setDisable(false);
+                    btnLabel.setText(originalLabel);
+                });
+            }
+        });
     }
 
-    private void handleRegister() {
+    private void performLogin(String username, String password, String selectedRole) {
+        User user = new UserDAO().loginUser(username, password);
+        
+        Platform.runLater(() -> {
+            if (user == null) {
+                showError("Invalid username or password. Please try again.");
+                return;
+            }
+
+            if (!user.isActive()) {
+                showError("Your account has been disabled by the administrator.");
+                return;
+            }
+
+            // ADMIN AUTO-BYPASS
+            if (user.getRole().equalsIgnoreCase("admin")) {
+                try {
+                    routeUser(user, "admin");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    showError("Could not load admin portal.");
+                }
+                return;
+            }
+
+            // Normal role check for other users
+            if (selectedRole == null) {
+                showError("Please select your role to continue.");
+                return;
+            }
+
+            if (!user.getRole().equalsIgnoreCase(selectedRole)) {
+                showError("Wrong role selected. Your account is: " + user.getRole());
+                return;
+            }
+
+            try {
+                routeUser(user, user.getRole());
+            } catch (IOException e) {
+                e.printStackTrace();
+                showError("Could not load dashboard. Please try again.");
+            }
+        });
+    }
+
+    private void performRegister() {
         String firstName = firstNameField.getText().trim();
         String lastName  = lastNameField.getText().trim();
         String email     = emailField.getText().trim();
         String username  = usernameField.getText().trim();
         String password  = passwordField.getText();
-        String confirm   = confirmPasswordField.getText();
         String role      = getSelectedRole();
 
-        if (firstName.isEmpty())                     { showError("Please enter your first name.");           return; }
-        if (lastName.isEmpty())                      { showError("Please enter your surname.");               return; }
-        if (email.isEmpty() || !email.contains("@")) { showError("Please enter a valid email.");             return; }
-        if (username.isEmpty())                      { showError("Please choose a username.");                return; }
-        if (password.length() < 6)                  { showError("Password must be at least 6 characters."); return; }
-        if (!password.equals(confirm))               { showError("Passwords do not match.");                 return; }
-        if (role == null)                            { showError("Please select a role.");                   return; }
+        // Extra safety: cannot register as admin via public page
+        if ("admin".equalsIgnoreCase(role)) {
+            Platform.runLater(() -> showError("Admin registration is not allowed here."));
+            return;
+        }
 
         boolean ok = new UserDAO().registerUser(username, password, role, firstName, lastName, email);
-        if (!ok) { showError("Registration failed — username may already be taken."); return; }
+        
+        Platform.runLater(() -> {
+            if (!ok) {
+                showError("Registration failed — username may already be taken.");
+                return;
+            }
 
-        User user = new UserDAO().loginUser(username, password);
-        if (user != null) {
-            try { routeUser(user, user.getRole()); }
-            catch (IOException e) { showError("Registered! Please sign in."); handleToggleMode(); }
-        } else {
-            showError("Registered! Please sign in.");
-            handleToggleMode();
-        }
+            User user = new UserDAO().loginUser(username, password);
+            if (user != null) {
+                try { routeUser(user, user.getRole()); }
+                catch (IOException e) { 
+                    showError("Registered! Please sign in."); 
+                    if (isRegisterMode) handleToggleMode(); 
+                }
+            } else {
+                showError("Registered! Please sign in.");
+                if (isRegisterMode) handleToggleMode();
+            }
+        });
+    }
+
+    private String getSelectedRole() {
+        Toggle t = roleGroup.getSelectedToggle();
+        if (t == null)            return null;
+        if (t == btnRoleOfficer)  return "officer";
+        if (t == btnRoleCustomer) return "customer";
+        if (t == btnRoleMechanic) return "mechanic";
+        if (t == btnRoleInsurance) return "insurance";
+        return null;
+    }
+
+    private void showError(String msg) { 
+        lblError.setText(msg); 
+        errorBox.setVisible(true);  
+        errorBox.setManaged(true);
+        errorTimeout.playFromStart();
+    }
+    private void hideError() { 
+        errorTimeout.stop();
+        lblError.setText("");  
+        errorBox.setVisible(false); 
+        errorBox.setManaged(false); 
     }
 
     private void routeUser(User user, String role) throws IOException {
@@ -242,18 +355,4 @@ public class LoginController implements Initializable {
     @FXML private void handleForgotPassword() {
         showError("Please contact your system administrator to reset your password.");
     }
-
-    private String getSelectedRole() {
-        Toggle t = roleGroup.getSelectedToggle();
-        if (t == null)            return null;
-        if (t == btnRoleAdmin)    return "admin";
-        if (t == btnRoleOfficer)  return "officer";
-        if (t == btnRoleCustomer) return "customer";
-        if (t == btnRoleMechanic) return "mechanic";
-        if (t == btnRoleInsurance) return "insurance";
-        return null;
-    }
-
-    private void showError(String msg) { lblError.setText(msg); errorBox.setVisible(true);  errorBox.setManaged(true);  }
-    private void hideError()           { lblError.setText("");  errorBox.setVisible(false); errorBox.setManaged(false); }
 }

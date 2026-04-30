@@ -32,13 +32,13 @@
                     </columnConstraints>
                     <children>
                         <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                            <Label text="Vehicle ID" textFill="#bdc3c7" style="-fx-font-weight: bold; -fx-font-size: 12;" />
-                            <Label text="Associated vehicle" textFill="#5a6a8a" style="-fx-font-size: 10;" />
+                            <Label text="Select Vehicle" textFill="#bdc3c7" style="-fx-font-weight: bold; -fx-font-size: 12;" />
+                            <Label text="Search by registration or model" textFill="#5a6a8a" style="-fx-font-size: 10;" />
                         </VBox>
                         <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: #0a1628; -fx-padding: 0 12; -fx-border-color: #2a3a5a; -fx-border-radius: 6; -fx-background-radius: 6;" GridPane.columnIndex="1" GridPane.rowIndex="0">
                             <FontIcon iconLiteral="fas-car" iconSize="14" iconColor="#5a6a8a"/>
-                            <TextField fx:id="txtVehicleID" promptText="e.g. 101" HBox.hgrow="ALWAYS"
-                                       style="-fx-background-color: transparent; -fx-text-fill: white; -fx-padding: 10 0;" />
+                            <ComboBox fx:id="cbVehicles" promptText="Choose a vehicle..." HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                                       style="-fx-background-color: transparent; -fx-text-fill: white;" />
                         </HBox>
 
                         <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="1">
